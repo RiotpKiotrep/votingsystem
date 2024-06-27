@@ -1,3 +1,14 @@
+<?php
+session_start();
+
+include("connection.php");
+include("functions.php");
+
+$user_data = check_login($conn);
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,11 +21,12 @@
     
     <form action="send_vote.php" method="post">
         <fieldset>
+            <!--
             <fieldset>
                 <legend>Email (temporary)</legend>
                 <input type="text" name="email">
             </fieldset>
-            
+            -->
             <br>
             <div class="candidates">
                 <!-- candidates list -->
@@ -73,6 +85,11 @@
         uid.value = 
         candidates.insertAdjacentElement('beforeend', uid);
         */
+        var email = document.createElement("input")
+        email.type = "hidden";
+        email.name = "email";
+        email.value = "<?php echo $user_data['email']; ?>";
+        candidates.insertAdjacentElement('beforeend', email)
     </script>
 </body>
 </html>

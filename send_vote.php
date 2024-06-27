@@ -17,6 +17,30 @@ if (!empty($candidate))
     }
     else
     {
+        $query = "select * from available_users where email = '$email' and voting = '$votingdb'";
+        $result = mysqli_query($conn, $query);
+        if($result)
+        {
+            if($result && mysqli_num_rows($result) == 0)
+            {
+                echo "Not allowed to vote";
+                //header("Location: index.php");
+                die;
+            }
+        }
+        $query = "select * from $votingdb where email = '$email'";
+        $result = mysqli_query($conn, $query);
+        if($result)
+        {
+            if($result && mysqli_num_rows($result) > 0)
+            {
+                echo "Already voted";
+                //header("Location: index.php");
+                die;
+            }
+        }
+
+
         $sql = "INSERT INTO ".$votingdb." (email, candidate) VALUES (?, ?)";
 
         $stmt = mysqli_stmt_init($conn);
@@ -30,6 +54,15 @@ if (!empty($candidate))
         mysqli_stmt_execute($stmt);
 
         echo "Record saved";
+        
+        /*
+        $subject = "Oddałeś głos na stronie votingsystem";
+        $message = "Jeśli to nie ty, kliknij tutaj aby usunąć głos: link";
+        mail($email, $subject, $message);
+        */
+
+        //header("Location: index.php");
+        //die;
     }
 }
 else
