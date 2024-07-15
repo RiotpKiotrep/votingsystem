@@ -14,7 +14,8 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
     if(!empty($email) && !empty($password) && filter_var($email, FILTER_VALIDATE_EMAIL))
     {
         $user_id = random_num(20);
-        $query = "insert into users (user_id,email,first_name,last_name,password) values ('$user_id','$email','$first_name','$last_name','$password')";
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+        $query = "insert into users (user_id,email,first_name,last_name,password) values ('$user_id','$email','$first_name','$last_name','$hashed_password')";
         mysqli_query($conn, $query);
 
         header("Location: login.php");
