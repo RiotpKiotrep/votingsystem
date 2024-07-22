@@ -62,6 +62,7 @@ $user_data = check_login($conn);
             radioBtn.id = i+1;
             radioBtn.name = "candidate";
             radioBtn.value = voting.candidates[i];
+            radioBtn.required = true;
             candidates.insertAdjacentElement('beforeend', radioBtn);
 
             var label = document.createElement("label");

@@ -17,6 +17,8 @@ if (!empty($candidate))
     }
     else
     {
+        $hashed_email = sha1($email);
+        //$query = "select * from available_users where email = '$hashed_email' and voting = '$votingdb'";
         $query = "select * from available_users where email = '$email' and voting = '$votingdb'";
         $result = mysqli_query($conn, $query);
         if($result)
@@ -28,7 +30,7 @@ if (!empty($candidate))
                 die;
             }
         }
-        $query = "select * from $votingdb where email = '$email'";
+        $query = "select * from $votingdb where email = '$hashed_email'";
         $result = mysqli_query($conn, $query);
         if($result)
         {
@@ -90,7 +92,7 @@ if (!empty($candidate))
         }
 
         $msg = bin2hex($candidate_encr).'|'.bin2hex($nonce);
-        mysqli_stmt_bind_param($stmt, "ss", $email, $msg);
+        mysqli_stmt_bind_param($stmt, "ss", $hashed_email, $msg);
         mysqli_stmt_execute($stmt);
 
         echo "Record saved";
