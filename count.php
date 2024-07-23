@@ -31,7 +31,7 @@ else
             $candidate = explode("|", $can_decr);
             if($candidate[1] == "http://localhost/votingsystem/vote_page.php?".$voting_id)
             {
-                echo $candidate[0]; // to comment out
+                //echo $candidate[0];
                 
                 if(!array_key_exists($candidate[0], $count))
                 {
@@ -42,8 +42,12 @@ else
                     $count[$candidate[0]] += 1;
                 }
 
-                echo "<br>".$count[$candidate[0]]."<br>"; // to comment out
+                //echo "<br>".$count[$candidate[0]]."<br>";
             }
+        }
+        foreach($count as $can => $num)
+        {
+            echo $can.": ".$num."<br>";
         }
     }
 }
