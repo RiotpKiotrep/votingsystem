@@ -3,7 +3,7 @@ var votings = [
         id: 1,
         voting_name: "voting1",
         title: "Glosowanie 1",
-        description: "Opis glosowania 1",
+        description: "Glosowanie na staroste",
         //date:
         candidates:
         [

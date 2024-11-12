@@ -12,8 +12,8 @@ if(mysqli_connect_error())
 }
 else
 {
-    $votingdb = "voting2";
-    $voting_id = "2";
+    $votingdb = "voting1";
+    $voting_id = "1";
     $client_public = hex2bin("ce4ddb4ac70feb390b29722f70adf06ba346920db3baef804f9514a87eb35c13");
     $server_secret = hex2bin("c13f4d014046f5f572a1edd938f2b8b2765c922611c7136dde463db32e9d4995");
     $recver_keypair = sodium_crypto_box_keypair_from_secretkey_and_publickey($server_secret, $client_public);

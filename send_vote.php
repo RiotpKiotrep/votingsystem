@@ -52,6 +52,7 @@ if (!empty($candidate))
         print(bin2hex($cli_public));
         print('\n');
 
+        
         $srv_keypair = sodium_crypto_box_keypair();
         $srv_secret = sodium_crypto_box_secretkey($srv_keypair);
         print(bin2hex($srv_secret));

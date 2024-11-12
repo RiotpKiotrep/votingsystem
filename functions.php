@@ -33,3 +33,18 @@ function random_num($length)
     }
     return $text;
 }
+
+function blind_sign($message)
+{
+    /*
+    $blind_keypair = sodium_crypto_box_keypair();
+    $blind_secret = sodium_crypto_box_secretkey($blind_keypair);
+    print(bin2hex($blind_secret));
+    print('\n');
+    $blind_public = sodium_crypto_box_publickey($blind_keypair);
+    print(bin2hex($blind_public));
+    print('\n');
+    */
+
+    
+}
