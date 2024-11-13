@@ -23,16 +23,28 @@ else
     if($result)
     {
         $count = [];
+        $errorcount = 0;
         while($row = mysqli_fetch_assoc($result))
         {
             $params = explode("|", $row['candidate']);
-            $can_decr = sodium_crypto_box_open(hex2bin($params[0]), hex2bin($params[1]), $recver_keypair);
+            if(!array_key_exists(1, $params))
+            {
+                $errorcount += 1;
+                continue;
+            }
+            try
+            {
+                $can_decr = sodium_crypto_box_open(hex2bin($params[0]), hex2bin($params[1]), $recver_keypair);
+            }
+            catch(Exception $e)
+            {
+                $errorcount += 1;
+                continue;
+            }
             //echo $can_decr;
             $candidate = explode("|", $can_decr);
             if($candidate[1] == "http://localhost/votingsystem/vote_page.php?".$voting_id)
             {
-                //echo $candidate[0];
-                
                 if(!array_key_exists($candidate[0], $count))
                 {
                     $count[$candidate[0]] = 1;
@@ -44,11 +56,17 @@ else
 
                 //echo "<br>".$count[$candidate[0]]."<br>";
             }
+            else
+            {
+                $errorcount += 1;
+            }
         }
         foreach($count as $can => $num)
         {
             echo $can.": ".$num."<br>";
         }
+        echo "Błędy: ".$errorcount."<br>";
+        if($errorcount>0) echo "Zalecany przegląd wpisów w bazie";
     }
 }
 

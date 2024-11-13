@@ -93,6 +93,7 @@ if (!empty($candidate))
         }
 
         $msg = bin2hex($candidate_encr)."|".bin2hex($nonce);
+        echo "<br>".$msg."<br>";
         mysqli_stmt_bind_param($stmt, "ss", $hashed_email, $msg);
         mysqli_stmt_execute($stmt);
 
