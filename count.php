@@ -17,19 +17,20 @@ else
     $client_public = hex2bin("ce4ddb4ac70feb390b29722f70adf06ba346920db3baef804f9514a87eb35c13");
     $server_secret = hex2bin("c13f4d014046f5f572a1edd938f2b8b2765c922611c7136dde463db32e9d4995");
     $recver_keypair = sodium_crypto_box_keypair_from_secretkey_and_publickey($server_secret, $client_public);
-    
+
     $query = "select candidate from $votingdb";
     $result = mysqli_query($conn, $query);
     if($result)
     {
         $count = [];
-        $errorcount = 0;
+        $total_count = 0;
+        $error_count = 0;
         while($row = mysqli_fetch_assoc($result))
         {
             $params = explode("|", $row['candidate']);
             if(!array_key_exists(1, $params))
             {
-                $errorcount += 1;
+                $error_count += 1;
                 continue;
             }
             try
@@ -38,7 +39,7 @@ else
             }
             catch(Exception $e)
             {
-                $errorcount += 1;
+                $error_count += 1;
                 continue;
             }
             //echo $can_decr;
@@ -53,20 +54,30 @@ else
                 {
                     $count[$candidate[0]] += 1;
                 }
-
+                $total_count += 1;
                 //echo "<br>".$count[$candidate[0]]."<br>";
             }
             else
             {
-                $errorcount += 1;
+                $error_count += 1;
             }
         }
         foreach($count as $can => $num)
         {
             echo $can.": ".$num."<br>";
         }
-        echo "Błędy: ".$errorcount."<br>";
-        if($errorcount>0) echo "Zalecany przegląd wpisów w bazie";
+
+        $query = "select count(email) as email_count from available_users where voting = '$votingdb'";
+        $result = mysqli_query($conn, $query);
+        if($result)
+        {
+            $email_count = mysqli_fetch_assoc($result);
+            echo "<br>Ilość osób upoważnionych do głosowania: ".$email_count['email_count']."<br>";
+        }
+        if($total_count < $email_count['email_count']) echo $email_count['email_count']-$total_count." osób nie zagłosowało<br>Zalecany kontakt z osobami upoważnionymi do głosowania<br><br>";
+
+        echo "Błędy: ".$error_count."<br>";
+        if($error_count>0) echo "Zalecany przegląd wpisów w bazie";
     }
 }
 
