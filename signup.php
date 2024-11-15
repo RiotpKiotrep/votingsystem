@@ -18,11 +18,17 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
         $query = "insert into users (user_id,email,first_name,last_name,password) values ('$user_id','$email','$first_name','$last_name','$hashed_password')";
         mysqli_query($conn, $query);
 
+        $log = "User $user_id with email $email has been registered";
+        logger($log);
+
         header("Location: login.php");
         die;
     }  
     else
     {
+        $log = "User has tried using incorrect email format: $email";
+        logger($log);
+
         echo "Incorrect email format";
     }
 }

@@ -6,6 +6,10 @@ include("functions.php");
 
 $user_data = check_login($conn);
 
+$email = $user_data['email'];
+$log = "User $email has chosen a voting";
+logger($log);
+
 ?>
 
 

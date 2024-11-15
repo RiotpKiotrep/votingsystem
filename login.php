@@ -23,16 +23,26 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
                 if(password_verify($password, $user_data['password']))
                 {
                     $_SESSION['user_id'] = $user_data['user_id'];
+
+                    $log = "User $email logged in";
+                    logger($log);
+
                     header("Location: index.php");
                     die;
                 }
             }
         }
 
+        $log = "User tried logging in with email: $email";
+        logger($log);
+
         echo "Wrong email or password";
     }  
     else
     {
+        $log = "User tried logging in with email: $email";
+        logger($log);
+
         echo "Wrong email or password";
     }
 }

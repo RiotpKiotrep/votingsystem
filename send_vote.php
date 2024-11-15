@@ -3,6 +3,11 @@ $email = $_POST['email'];
 $candidate = $_POST['candidate'];
 $votingdb = $_POST['votingdb'];
 
+include("functions.php");
+
+$log = "User $email has tried sending vote in voting: $votingdb";
+logger($log);
+
 if (!empty($candidate))
 {
     $host = "localhost";
@@ -25,8 +30,13 @@ if (!empty($candidate))
         {
             if($result && mysqli_num_rows($result) == 0)
             {
+                $log = "User not allowed to vote";
+                logger($log);
+                
+                header("Refresh:5; url=index.php");
+
                 echo "Not allowed to vote";
-                //header("Location: index.php");
+
                 die;
             }
         }
@@ -36,8 +46,13 @@ if (!empty($candidate))
         {
             if($result && mysqli_num_rows($result) > 0)
             {
+                $log = "User has already voted";
+                logger($log);
+
+                header("Refresh:5; url=index.php");
+                
                 echo "Already voted";
-                //header("Location: index.php");
+
                 die;
             }
         }
@@ -73,8 +88,8 @@ if (!empty($candidate))
         
         // encrypt
         $candidate_encr = sodium_crypto_box($candidate.'|'.$_SERVER['HTTP_REFERER'], $nonce, $sender_keypair);
-        echo bin2hex($candidate_encr);
-        echo "\n";
+        //echo bin2hex($candidate_encr);
+        //echo "\n";
 
         // sign
         /*
@@ -93,12 +108,14 @@ if (!empty($candidate))
         }
 
         $msg = bin2hex($candidate_encr)."|".bin2hex($nonce);
-        echo "<br>".$msg."<br>";
+        //echo "<br>".$msg."<br>";
         mysqli_stmt_bind_param($stmt, "ss", $hashed_email, $msg);
         mysqli_stmt_execute($stmt);
 
-        echo "Record saved";
+        //echo "Record saved";
         
+        $log = "Vote successfully sent";
+
         // decrypt test
         /*
         $recver_keypair = sodium_crypto_box_keypair_from_secretkey_and_publickey($server_secret, $client_public);
@@ -110,16 +127,22 @@ if (!empty($candidate))
         $message = "Jeśli to nie ty, kliknij tutaj aby usunąć głos: link";
         if(mail($email, $subject, $message))
         {
-            echo "Email sent";
+            //echo "Email sent";
+
+            $log = "Confirmation email sent";
+            logger($log);
         }
         else
         {
-            echo "Email not sent";
+            //echo "Email not sent";
+
+            $log = "Confirmation email not sent";
+            logger($log);
         }
         
 
-        //header("Location: index.php");
-        //die;
+        header("Location: index.php");
+        die;
     }
 }
 else
