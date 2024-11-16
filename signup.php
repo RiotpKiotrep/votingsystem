@@ -13,10 +13,42 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 
     if(!empty($email) && !empty($password) && filter_var($email, FILTER_VALIDATE_EMAIL))
     {
+        // check if user exists
+        $sql = "SELECT COUNT(*) as count FROM users WHERE email = ?";
+        $stmt = mysqli_stmt_init($conn);
+        
+        if (!mysqli_stmt_prepare($stmt, $sql))
+        {
+            die(mysqli_error($conn));
+        }
+
+        mysqli_stmt_bind_param($stmt, "s", $email);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $count = mysqli_fetch_assoc($result);
+        if($count['count'] > 0)
+        {
+            echo "User with this email already exists";
+            mysqli_stmt_close($stmt);
+            die;
+        }
+
+        mysqli_stmt_close($stmt);
+        
+        // generate ID and add user
         $user_id = random_num(20);
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-        $query = "insert into users (user_id,email,first_name,last_name,password) values ('$user_id','$email','$first_name','$last_name','$hashed_password')";
-        mysqli_query($conn, $query);
+
+        $sql = "INSERT INTO users (user_id, email, first_name, last_name, password) VALUES (?, ?, ?, ?, ?)";
+        $stmt = mysqli_stmt_init($conn);
+        
+        if (!mysqli_stmt_prepare($stmt, $sql))
+        {
+            die(mysqli_error($conn));
+        }
+
+        mysqli_stmt_bind_param($stmt, "sssss", $user_id, $email, $first_name, $last_name, $hashed_password);
+        mysqli_stmt_execute($stmt);
 
         $log = "User $user_id with email $email has been registered";
         logger($log);
