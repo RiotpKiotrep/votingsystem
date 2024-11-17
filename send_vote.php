@@ -117,6 +117,7 @@ if (!empty($candidate))
         //echo "Record saved";
         
         $log = "Vote successfully sent";
+        logger($log);
 
         // decrypt test
         /*
