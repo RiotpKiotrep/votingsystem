@@ -98,7 +98,9 @@ if (!empty($candidate))
         echo "\n";
         */
 
-        $sql = "INSERT INTO ".$votingdb." (email, candidate) VALUES (?, ?)";
+        $token = generate_token();
+
+        $sql = "INSERT INTO ".$votingdb." (email, candidate, token) VALUES (?, ?, ?)";
 
         $stmt = mysqli_stmt_init($conn);
 
@@ -109,7 +111,7 @@ if (!empty($candidate))
 
         $msg = bin2hex($candidate_encr)."|".bin2hex($nonce);
         //echo "<br>".$msg."<br>";
-        mysqli_stmt_bind_param($stmt, "ss", $hashed_email, $msg);
+        mysqli_stmt_bind_param($stmt, "sss", $hashed_email, $msg, $token);
         mysqli_stmt_execute($stmt);
 
         //echo "Record saved";
@@ -122,9 +124,9 @@ if (!empty($candidate))
         $can_decr = sodium_crypto_box_open($candidate_encr, $nonce, $recver_keypair);
         echo $can_decr;
         */
-        
+        $delete_link = "localhost/votingsystem/delete_vote.php?v=$votingdb&t=$token";
         $subject = "Oddałeś głos na stronie votingsystem";
-        $message = "Jeśli to nie ty, kliknij tutaj aby usunąć głos: link";
+        $message = "Jeśli to nie ty, kliknij tutaj aby usunąć głos: \n$delete_link";
         if(mail($email, $subject, $message))
         {
             //echo "Email sent";

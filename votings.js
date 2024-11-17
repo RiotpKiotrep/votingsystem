@@ -4,7 +4,6 @@ var votings = [
         voting_name: "voting1",
         title: "Glosowanie 1",
         description: "Glosowanie na staroste",
-        //date:
         candidates:
         [
             "Jan Kowalski",
@@ -17,7 +16,6 @@ var votings = [
         voting_name: "voting2",
         title: "Glosowanie 2",
         description: "Opis glosowania 2",
-        //date:
         candidates:
         [
             "Ala Nowak",

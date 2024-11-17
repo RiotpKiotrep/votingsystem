@@ -67,3 +67,8 @@ function logger($log)
 
     file_put_contents('log.log', $contents);
 }
+
+function generate_token()
+{
+    return bin2hex(random_bytes(32));
+}
