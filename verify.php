@@ -31,8 +31,12 @@ if(isset($_GET['t']))
             die(mysqli_error($conn));
         }
 
-        mysqli_stmt_bind_param($stmt, "s", $user_data['user_id']);
+        $user_id = $user_data['user_id'];
+        mysqli_stmt_bind_param($stmt, "s", $user_id);
         mysqli_stmt_execute($stmt);
+
+
+        $log = "User with ID $user_id verified";
 
         echo "Zweryfikowano konto";
     }
