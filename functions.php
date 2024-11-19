@@ -57,3 +57,14 @@ function generate_token()
 {
     return bin2hex(random_bytes(32));
 }
+
+function validate_password($password)
+{
+    $min_length = 8;
+    $uppercase = preg_match('/[A-Z]/', $password);
+    $lowercase = preg_match('/[a-z]/', $password);
+    $digit = preg_match('/\d/', $password);
+    $special = preg_match('/[\W_]/', $password);
+
+    return strlen($password) >= $min_length && $uppercase && $lowercase && $digit && $special;
+}
