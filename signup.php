@@ -38,8 +38,9 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
         // generate ID and add user
         $user_id = random_num(20);
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+        $token = generate_token();
 
-        $sql = "INSERT INTO users (user_id, email, first_name, last_name, password) VALUES (?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO users (user_id, email, first_name, last_name, password, verified, token) VALUES (?, ?, ?, ?, ?, 0, ?)";
         $stmt = mysqli_stmt_init($conn);
         
         if (!mysqli_stmt_prepare($stmt, $sql))
@@ -47,11 +48,25 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
             die(mysqli_error($conn));
         }
 
-        mysqli_stmt_bind_param($stmt, "sssss", $user_id, $email, $first_name, $last_name, $hashed_password);
+        mysqli_stmt_bind_param($stmt, "ssssss", $user_id, $email, $first_name, $last_name, $hashed_password, $token);
         mysqli_stmt_execute($stmt);
 
         $log = "User $user_id with email $email has been registered";
         logger($log);
+
+        $verify_link = "https://localhost/votingsystem/verify.php?t=$token";
+        $subject = "Zweryfikuj swoje konto";
+        $message = "Witaj $first_name,\nkliknij w poniższy link, aby zweryfikować swoje konto:\n$verify_link.";
+        if(mail($email, $subject, $message))
+        {
+            $log = "Confirmation email sent";
+            logger($log);
+        }
+        else
+        {
+            $log = "Confirmation email not sent";
+            logger($log);
+        }
 
         header("Location: login.php");
         die;

@@ -30,7 +30,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
             {
                 $user_data = mysqli_fetch_assoc($result);
 
-                if(password_verify($password, $user_data['password']))
+                if(password_verify($password, $user_data['password']) && $user_data['verified']==1)
                 {
                     $_SESSION['user_id'] = $user_data['user_id'];
 
@@ -46,14 +46,14 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
         $log = "User tried logging in with email: $email";
         logger($log);
 
-        echo "Wrong email or password";
+        echo "Wrong email, password or user isn't verified";
     }  
     else
     {
         $log = "User tried logging in with email: $email";
         logger($log);
 
-        echo "Wrong email or password";
+        echo "Wrong email, password or user isn't verified";
     }
 }
 ?>
