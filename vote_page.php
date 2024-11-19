@@ -10,6 +10,83 @@ $email = $user_data['email'];
 $log = "User $email has chosen a voting";
 logger($log);
 
+$id = $_SERVER['QUERY_STRING'] ?? null;
+if(!$id || !ctype_digit($id))
+{
+    die("Wrong voting ID");
+}
+
+$votings_file = file_get_contents('votings.js');
+$jsonStart = strpos($votings_file, '[');
+$jsonEnd = strrpos($votings_file, ']') + 1;
+$jsonFile = substr($votings_file, $jsonStart, $jsonEnd - $jsonStart);
+$jsonFile = trim($jsonFile);
+$jsonFile = preg_replace('/(\w+):/', '"$1":', $jsonFile);
+$votings = json_decode($jsonFile, true);
+if(json_last_error() !== JSON_ERROR_NONE)
+{
+    die('Error decoding JSON: '.json_last_error_msg());
+}
+$votingdb = null;
+foreach ($votings as $voting) {
+    if ((int)$voting['id'] === (int)$id) {
+        $votingdb = $voting['voting_name'];
+        break;
+    }
+}
+
+if (!$votingdb) {
+    die("Wrong voting ID");
+}
+
+$host = "localhost";
+$dbUsername = "root";
+$dbPassword = "";
+$dbName = "voting_system_db";
+
+$conn = new mysqli($host, $dbUsername, $dbPassword, $dbName);
+if(mysqli_connect_error())
+{
+    die('Connect error('. mysqli_connect_errno().')'. mysqli_connect_error());
+}
+else
+{
+    $hashed_email = sha1($email);
+    //$query = "select * from available_users where email = '$hashed_email' and voting = '$votingdb'";
+    $query = "select * from available_users where email = '$email' and voting = '$votingdb'";
+    $result = mysqli_query($conn, $query);
+    if($result)
+    {
+        if($result && mysqli_num_rows($result) == 0)
+        {
+            $log = "User not allowed to vote";
+            logger($log);
+            
+            header("Refresh:5; url=index.php");
+
+            echo "Not allowed to vote";
+
+            die;
+        }
+    }
+    $query = "select * from $votingdb where email = '$hashed_email'";
+    $result = mysqli_query($conn, $query);
+    if($result)
+    {
+        if($result && mysqli_num_rows($result) > 0)
+        {
+            $log = "User has already voted";
+            logger($log);
+
+            header("Refresh:5; url=index.php");
+            
+            echo "Already voted";
+
+            die;
+        }
+    }
+}
+
 ?>
 
 
