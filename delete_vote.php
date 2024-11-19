@@ -64,10 +64,14 @@ if(isset($_GET['v'], $_GET['t']))
                 mysqli_stmt_bind_param($stmt, "s", $token);
                 mysqli_stmt_execute($stmt);
 
+                $log = "Vote deleted from $votingdb through email link";
+                logger($log);
+
                 echo "Głos został usunięty";
             }
             else
             {
+                $log = "Attempted to delete vote from $votingdb with token $token";
                 echo "Błędny link lub głos został już usunięty";
             }
         }
