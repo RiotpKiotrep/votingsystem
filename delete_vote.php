@@ -1,4 +1,7 @@
 <?php
+
+include("functions.php");
+
 if(isset($_GET['v'], $_GET['t']))
 {
     $votingdb = $_GET['v'];
@@ -15,13 +18,8 @@ if(isset($_GET['v'], $_GET['t']))
     }
     else
     {
-        $votings_file = file_get_contents('votings.js');
-        $jsonStart = strpos($votings_file, '[');
-        $jsonEnd = strrpos($votings_file, ']') + 1;
-        $jsonFile = substr($votings_file, $jsonStart, $jsonEnd - $jsonStart);
-        $jsonFile = trim($jsonFile);
-        $jsonFile = preg_replace('/(\w+):/', '"$1":', $jsonFile);
-        $votings = json_decode($jsonFile, true);
+        $votings_file = file_get_contents('votings.json');
+        $votings = json_decode($votings_file, true);
         if(json_last_error() !== JSON_ERROR_NONE)
         {
             die('Error decoding JSON: '.json_last_error_msg());

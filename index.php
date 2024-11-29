@@ -35,22 +35,26 @@ $user_data = check_login($conn);
             </ol>
         </div>
     </div>
-    <script src="votings.js"></script>
     <script>
-        console.log(votings);
-        var container = document.querySelector('ol');
-        for(let voting of votings)
+        fetch('votings.json').then(function(response)
         {
-            var html = `
-                <li class="row">
-                    <a href="/votingsystem/vote_page.php?${voting.id}">
-                        <h4 class="title">
-                            ${voting.title}
-                        </h4>
-                </li>
-            `
-            container.insertAdjacentHTML('beforeend', html);
-        }
+            return response.json();
+        }).then(function(votings)
+        {
+            var container = document.querySelector('ol');
+            for(let voting of votings)
+            {
+                var html = `
+                    <li class="row">
+                        <a href="/votingsystem/vote_page.php?${voting.id}">
+                            <h4 class="title">
+                                ${voting.title}
+                            </h4>
+                    </li>
+                `
+                container.insertAdjacentHTML('beforeend', html);
+            }
+        })
     </script>
 </body>
 </html>

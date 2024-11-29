@@ -16,13 +16,8 @@ if(!$id || !ctype_digit($id))
     die("Wrong voting ID");
 }
 
-$votings_file = file_get_contents('votings.js');
-$jsonStart = strpos($votings_file, '[');
-$jsonEnd = strrpos($votings_file, ']') + 1;
-$jsonFile = substr($votings_file, $jsonStart, $jsonEnd - $jsonStart);
-$jsonFile = trim($jsonFile);
-$jsonFile = preg_replace('/(\w+):/', '"$1":', $jsonFile);
-$votings = json_decode($jsonFile, true);
+$votings_file = file_get_contents('votings.json');
+$votings = json_decode($votings_file, true);
 if(json_last_error() !== JSON_ERROR_NONE)
 {
     die('Error decoding JSON: '.json_last_error_msg());
@@ -116,62 +111,68 @@ else
             <input type="submit" value="Submit">
         </fieldset>
     </form>
-    <script src="votings.js"></script>
     <script>
-        var id = window.location.search.slice(1);
-        var voting = votings.find(v => v.id == id);
-        console.log(voting); //working
-
-        var header = document.querySelector('.header');
-        var headerHtml = `
-            <h2 class = "title">
-                ${voting.title}
-            </h2>
-            <p class = "description">
-                ${voting.description}
-            </p>
-        `
-        header.insertAdjacentHTML('beforeend', headerHtml);
-        
-        var candidates = document.querySelector('.candidates');
-        
-        for(var i=0; i<voting.candidates.length; i++)
+        fetch('votings.json').then(function(response)
         {
-            console.log(voting.candidates[i]);
-            var radioBtn = document.createElement("input");
-            radioBtn.type = "radio";
-            radioBtn.id = i+1;
-            radioBtn.name = "candidate";
-            radioBtn.value = voting.candidates[i];
-            radioBtn.required = true;
-            candidates.insertAdjacentElement('beforeend', radioBtn);
-
-            var label = document.createElement("label");
-            label.htmlFor = i+1;
-            label.innerHTML = voting.candidates[i];
-            candidates.insertAdjacentElement('beforeend', label);
-
-            candidates.insertAdjacentElement('beforeend', document.createElement("br"));
-        }
+            return response.json();
+        }).then(function(votings)
+        {
+            var id = window.location.search.slice(1);
+            var voting = votings.find(v => v.id == id);
         
-        var db = document.createElement("input")
-        db.type = "hidden";
-        db.name = "votingdb";
-        db.value = voting.voting_name;
-        candidates.insertAdjacentElement('beforeend', db);
+            var header = document.querySelector('.header');
+            var headerHtml = `
+                <h2 class = "title">
+                    ${voting.title}
+                </h2>
+                <p class = "description">
+                    ${voting.description}
+                </p>
+            `
+            header.insertAdjacentHTML('beforeend', headerHtml);
+            
+            var candidates = document.querySelector('.candidates');
+            
+            for(var i=0; i<voting.candidates.length; i++)
+            {
+                console.log(voting.candidates[i]);
+                var radioBtn = document.createElement("input");
+                radioBtn.type = "radio";
+                radioBtn.id = i+1;
+                radioBtn.name = "candidate";
+                radioBtn.value = voting.candidates[i];
+                radioBtn.required = true;
+                candidates.insertAdjacentElement('beforeend', radioBtn);
+
+                var label = document.createElement("label");
+                label.htmlFor = i+1;
+                label.innerHTML = voting.candidates[i];
+                candidates.insertAdjacentElement('beforeend', label);
+
+                candidates.insertAdjacentElement('beforeend', document.createElement("br"));
+            }
+            
+            var db = document.createElement("input")
+            db.type = "hidden";
+            db.name = "votingdb";
+            db.value = voting.voting_name;
+            candidates.insertAdjacentElement('beforeend', db);
+            
+            /* ////// hidden email/UID value to pass for identity check
+            var uid = document.createElement("input")
+            uid.type = "hidden";
+            uid.name = "uid";
+            uid.value = 
+            candidates.insertAdjacentElement('beforeend', uid);
+            */
+            var email = document.createElement("input")
+            email.type = "hidden";
+            email.name = "email";
+            email.value = "<?php echo $user_data['email']; ?>";
+            candidates.insertAdjacentElement('beforeend', email)
+        });
+
         
-        /* ////// hidden email/UID value to pass for identity check
-        var uid = document.createElement("input")
-        uid.type = "hidden";
-        uid.name = "uid";
-        uid.value = 
-        candidates.insertAdjacentElement('beforeend', uid);
-        */
-        var email = document.createElement("input")
-        email.type = "hidden";
-        email.name = "email";
-        email.value = "<?php echo $user_data['email']; ?>";
-        candidates.insertAdjacentElement('beforeend', email)
     </script>
 </body>
 </html>
