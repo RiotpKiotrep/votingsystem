@@ -18,16 +18,16 @@ $user_data = check_login($conn);
 </head>
 <body>
     <div class="header">
-        <h1>Strona główna</h1>
+        <h1>Voting system - main page</h1>
         <hr>
     </div>
     
-    <div id="welcome"> Witaj, <?php echo $user_data['first_name']; ?>!</div>
-    <a href="logout.php">Wyloguj się</a>
+    <div id="welcome"> Hello, <?php echo $user_data['first_name']; ?>!</div>
+    <a href="logout.php">Log out</a>
 
     <div class="main">
         <div class="intro">
-            <h3>Wybierz głosowanie, w którym chcesz uczestniczyć:</h2>
+            <h3>Choose voting to participate in:</h2>
         </div>
         <div class="list">
             <ol>

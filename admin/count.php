@@ -147,12 +147,12 @@ if(isset($_POST['id']))
             if($result)
             {
                 $email_count = mysqli_fetch_assoc($result);
-                echo "<br>Ilość osób upoważnionych do głosowania: ".$email_count['email_count']."<br>";
+                echo "<br>Amount of users allowed to vote: ".$email_count['email_count']."<br>";
             }
-            if($total_count < $email_count['email_count']) echo $email_count['email_count']-$total_count." osób nie zagłosowało<br>Zalecany kontakt z osobami upoważnionymi do głosowania<br><br>";
+            if($total_count < $email_count['email_count']) echo $email_count['email_count']-$total_count." users didn't vote<br>Recommendation: contact voting participants<br><br>";
 
-            echo "Błędy: ".$error_count."<br>";
-            if($error_count>0) echo "Zalecany przegląd wpisów w bazie";
+            echo "Errors: ".$error_count."<br>";
+            if($error_count>0) echo "Recommendation: check database entries";
         }
     }
 }

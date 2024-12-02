@@ -93,16 +93,16 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
     </style>
 
     <div id="box">
-        <div style="font-size: 20px; margin: 10px;">Zaloguj się:</div>
+        <div style="font-size: 20px; margin: 10px;">Log in:</div>
         <form method="post">
             <label for="email">Email:</label>
             <input id="text" type="text" name="email"><br><br>
             <label for="password">Password:</label>
             <input id="text" type="password" name="password"><br><br>
 
-            <input id="button" type="submit" value="Zaloguj się"><br><br>
+            <input id="button" type="submit" value="Log in"><br><br>
 
-            <a href="signup.php">Zarejestruj się</a>
+            <a href="signup.php">Sign up</a>
         </form>
     </div>
 </body>

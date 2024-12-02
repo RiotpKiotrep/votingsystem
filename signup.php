@@ -13,7 +13,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 
     if(!validate_password($password))
     {
-        echo "Wymagania hasła:<br>- co najmniej 8 znaków<br>- co najmniej jedna wielka litera<br>- co najmniej jedna mała litera<br>- co najmniej jedna cyfra<br>- co najmniej jeden znak specjalny<br>";
+        echo "Password requirements:<br>- at least 8 characters<br>- at least one uppercase letter<br>- at least one lowercase letter<br>- at least one number<br>- at least one special symbol<br>";
     }
     elseif(!empty($email) && !empty($password) && filter_var($email, FILTER_VALIDATE_EMAIL))
     {
@@ -59,8 +59,8 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
             logger($log);
     
             $verify_link = "https://localhost/votingsystem/verify.php?t=$token";
-            $subject = "Zweryfikuj swoje konto";
-            $message = "Witaj $first_name,\nkliknij w poniższy link, aby zweryfikować swoje konto:\n$verify_link.";
+            $subject = "Verify your account";
+            $message = "Hello $first_name,\nclick on the link below to verify your account:\n$verify_link.";
             if(mail($email, $subject, $message))
             {
                 $log = "Confirmation email sent";
@@ -121,20 +121,20 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
     </style>
 
     <div id="box">
-        <div style="font-size: 20px; margin: 10px;">Zarejestruj się:</div>
+        <div style="font-size: 20px; margin: 10px;">Sign up:</div>
         <form method="post">
             <label for="email">Email:</label>
             <input id="text" type="text" name="email"><br><br>
-            <label for="first_name">Imię:</label>
+            <label for="first_name">First name:</label>
             <input id="text" type="text" name="first_name"><br><br>
-            <label for="last_name">Nazwisko:</label>
+            <label for="last_name">Last name:</label>
             <input id="text" type="text" name="last_name"><br><br>
-            <label for="password">Hasło:</label>
+            <label for="password">Password:</label>
             <input id="text" type="password" name="password"><br><br>
 
-            <input id="button" type="submit" value="Zarejestruj się"><br><br>
+            <input id="button" type="submit" value="Sign up"><br><br>
 
-            <a href="login.php">Zaloguj się</a>
+            <a href="login.php">Log in</a>
         </form>
     </div>
 </body>

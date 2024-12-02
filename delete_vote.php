@@ -65,17 +65,17 @@ if(isset($_GET['v'], $_GET['t']))
                 $log = "Vote deleted from $votingdb through email link";
                 logger($log);
 
-                echo "Głos został usunięty";
+                echo "Vote has been deleted";
             }
             else
             {
                 $log = "Attempted to delete vote from $votingdb with token $token";
-                echo "Błędny link lub głos został już usunięty";
+                echo "The link is invalid or vote has already been deleted";
             }
         }
         else
         {
-            echo "Błędny link";
+            echo "Link is invalid";
         }
     }
 }

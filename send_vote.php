@@ -126,8 +126,8 @@ if (!empty($candidate))
         echo $can_decr;
         */
         $delete_link = "https://localhost/votingsystem/delete_vote.php?v=$votingdb&t=$token";
-        $subject = "Oddałeś głos na stronie votingsystem";
-        $message = "Jeśli to nie ty, kliknij tutaj aby usunąć głos: \n$delete_link";
+        $subject = "You voted on votingsystem";
+        $message = "If the action wasn't performed by you, click this link to remove vote: \n$delete_link";
         if(mail($email, $subject, $message))
         {
             $log = "Confirmation email sent";

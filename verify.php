@@ -38,11 +38,11 @@ if(isset($_GET['t']))
 
         $log = "User with ID $user_id verified";
 
-        echo "Zweryfikowano konto";
+        echo "Account verified";
     }
     else
     {
-        echo "Nieprawidłowy token";
+        echo "Wrong token";
     }
 }
 
