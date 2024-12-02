@@ -4,6 +4,11 @@ session_start();
 $login_hash = '$2y$10$kFZcVcoBJjEstNWQmOSwue.pTy2Vi2QcaKadLurwrNXkg1snC9DX6';
 $password_hash = '$2y$10$IGoD0pr8yuuqYG5uPIojNOwwfXeFpEPdmU5kCfLN6J1EzHMcvUNLi';
 
+if(isset($_GET['m']) && $_GET['m'] == 'session_expired')
+{
+    echo "Session expired";
+}
+
 if($_SERVER['REQUEST_METHOD'] == "POST")
 {
     $login = $_POST['login'];

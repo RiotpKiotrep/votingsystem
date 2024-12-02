@@ -7,6 +7,16 @@ if (!isset($_SESSION['admin_auth']) || $_SESSION['admin_auth'] !== true)
     die;
 }
 
+$inactive_time_limit = 1*60; // 1 * 60 seconds
+if(isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactive_time_limit)
+{
+    session_unset();
+    session_destroy();
+    header("Location: admin_auth.php?m=session_expired");
+    die;
+}
+$_SESSION['last_activity'] = time();
+
 $votings_file = file_get_contents('../votings.json');
 $votings = json_decode($votings_file, true);
 
@@ -32,5 +42,8 @@ $votings = json_decode($votings_file, true);
         </select><br><br>
         <button type="submit" name="action" value="delete">End or delete voting</button>
     </form>
+    <br>
+
+    <input type="button" value="Return to admin panel" onclick="document.location.href='admin_panel.php'" />
 </body>
 </html>
