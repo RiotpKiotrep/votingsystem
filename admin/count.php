@@ -1,3 +1,17 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['admin_auth']) || $_SESSION['admin_auth'] !== true)
+{
+    header("Location: admin_auth.php");
+    die;
+}
+
+$votings_file = file_get_contents('../votings.json');
+$votings = json_decode($votings_file, true);
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,42 +20,45 @@
     <title>Count</title>
 </head>
 <body>
+    <h1>Count votes</h1>
     <form method="post">
-        <label for="votingdb">Voting name:</label>
-        <input type="text" name="votingdb"><br>
-        <label for="voting_id">Voting ID:</label>
-        <input type="text" name="voting_id"><br>
-        <input type="submit" name="submit"><br>
+        <label for="voting_id">Choose voting:</label>
+        <select id="voting_id" name="id" required>
+            <?php foreach($votings as $voting):?>
+                <option value="<?php echo $voting['id'];?>">
+                    <?php echo $voting['title'];?>
+                </option>
+            <?php endforeach;?>
+        </select><br><br>
+        <button type="submit" name="submit">Count votes</button>
     </form>
-</body>
-</html>
+    <br>
+
 
 <?php
 
-if(isset($_POST['votingdb'], $_POST['voting_id']))
+if(isset($_POST['id']))
 {
-    $votingdb = $_POST['votingdb'];
-    $voting_id = $_POST['voting_id'];
+    $voting_id = (int)$_POST['id'];
 
-    $votings_file = file_get_contents('votings.json');
-    $votings = json_decode($votings_file, true);
     if(json_last_error() !== JSON_ERROR_NONE)
     {
         die('Error decoding JSON: '.json_last_error_msg());
     }
 
-    $exists = false;
+    $votingdb = null;
     foreach($votings as $voting)
     {
-        if($voting['voting_name'] === $votingdb && $voting['id'] == $voting_id)
+        if($voting['id'] === $voting_id)
         {
-            $exists = true;
+            $votingdb = $voting['voting_name'];
             break;
         }
     }
-    if(!$exists)
+
+    if($votingdb === null)
     {
-        echo "Błędne dane";
+        echo "Wrong data";
         die;
     }
 
@@ -50,7 +67,7 @@ if(isset($_POST['votingdb'], $_POST['voting_id']))
     $dbPassword = "";
     $dbName = "voting_system_db";
 
-    include("functions.php");
+    include("../functions.php");
 
     $conn = new mysqli($host, $dbUsername, $dbPassword, $dbName);
     if(mysqli_connect_error())
@@ -59,9 +76,6 @@ if(isset($_POST['votingdb'], $_POST['voting_id']))
     }
     else
     {
-        //$votingdb = "voting1";
-        //$voting_id = "1";
-
         $log = "Displayed vote count for: $votingdb";
         logger($log);
 
@@ -134,3 +148,8 @@ if(isset($_POST['votingdb'], $_POST['voting_id']))
 }
 
 ?>
+
+<br><br>
+<input type="button" value="Return to admin panel" onclick="document.location.href='admin_panel.php'" />
+</body>
+</html>
