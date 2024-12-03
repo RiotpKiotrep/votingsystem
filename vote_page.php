@@ -13,7 +13,9 @@ logger($log);
 $id = $_SERVER['QUERY_STRING'] ?? null;
 if(!$id || !ctype_digit($id))
 {
-    die("Wrong voting ID");
+    echo "Wrong voting ID";
+    header("Refresh:5; url=index.php");
+    die;
 }
 
 $votings_file = file_get_contents('votings.json');
@@ -30,8 +32,18 @@ foreach ($votings as $voting) {
     }
 }
 
-if (!$votingdb) {
-    die("Wrong voting ID");
+if(!$votingdb)
+{
+    echo "Wrong voting ID";
+    header("Refresh:5; url=index.php");
+    die;
+}
+
+if($voting['voting_ended'] === true)
+{
+    echo "Voting has already ended";
+    header("Refresh:5; url=index.php");
+    die;
 }
 
 $host = "localhost";

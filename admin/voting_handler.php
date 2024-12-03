@@ -63,7 +63,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST')
                 'voting_name' => $_POST['voting_name'],
                 'title' => $_POST['title'],
                 'description' => $_POST['description'],
-                'candidates' => array_map('trim', explode(',', $_POST['candidates']))
+                'candidates' => array_map('trim', explode(',', $_POST['candidates'])),
+                'voting_ended' => false
             ];
             $votings[] = $new_voting;
 
@@ -83,18 +84,17 @@ if($_SERVER['REQUEST_METHOD'] === 'POST')
             }
         }
     }
-    elseif($action === 'delete')
+    elseif($action === 'end')
     {
         $voting_id = (int)$_POST['id'];
-        foreach($votings as $key => $voting)
+        foreach($votings as &$voting)
         {
             if($voting['id'] === $voting_id)
             {
-                unset($votings[$key]);
+                $voting['voting_ended'] = true;
                 break;
             }
         }
-        $votings = array_values($votings);
     }
 
     file_put_contents('../votings.json', json_encode($votings, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));

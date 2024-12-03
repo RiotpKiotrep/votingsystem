@@ -8,6 +8,30 @@ include("functions.php");
 $log = "User $email has tried sending vote in voting: $votingdb";
 logger($log);
 
+$votings_file = file_get_contents('votings.json');
+$votings = json_decode($votings_file, true);
+if(json_last_error() !== JSON_ERROR_NONE)
+{
+    die('Error decoding JSON: '.json_last_error_msg());
+}
+$voting = null;
+foreach($votings as $v)
+{
+    if($v['voting_name'] === $votingdb)
+    {
+        $voting_name = $v;
+        break;
+    }
+}
+if($voting && $voting['voting_ended'] === true)
+{
+    $log = "Tried sending vote into ended voting";
+    logger($log);
+    header("Refresh:5; url=index.php");
+    echo "Voting has already ended";
+    die;
+}
+
 if (!empty($candidate))
 {
     $host = "localhost";
@@ -139,8 +163,8 @@ if (!empty($candidate))
             logger($log);
         }
         
-
-        header("Location: index.php");
+        header("Refresh:5; url=index.php");
+        echo "Vote successfully sent";
         die;
     }
 }

@@ -8,7 +8,8 @@
             "Jan Kowalski",
             "Tomasz Kwiatkowski",
             "Ala Nowak"
-        ]
+        ],
+        "voting_ended": false
     },
     {
         "id": 2,
@@ -18,6 +19,7 @@
         "candidates": [
             "Ala Nowak",
             "Tadeusz Pan"
-        ]
+        ],
+        "voting_ended": true
     }
 ]

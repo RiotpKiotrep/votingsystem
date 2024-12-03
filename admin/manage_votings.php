@@ -34,13 +34,13 @@ $votings = json_decode($votings_file, true);
     <form action="voting_handler.php" method="post">
         <label for="voting_id">Choose voting to end or delete:</label>
         <select id="voting_id" name="id" required>
-            <?php foreach($votings as $voting):?>
+            <?php foreach($votings as $voting): if(!$voting['voting_ended']):?>
                 <option value="<?php echo $voting['id'];?>">
                     <?php echo $voting['title'];?>
                 </option>
-            <?php endforeach;?>
+            <?php endif; endforeach;?>
         </select><br><br>
-        <button type="submit" name="action" value="delete">End or delete voting</button>
+        <button type="submit" name="action" value="end">End voting</button>
     </form>
     <br>
 

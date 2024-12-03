@@ -44,15 +44,18 @@ $user_data = check_login($conn);
             var container = document.querySelector('ol');
             for(let voting of votings)
             {
-                var html = `
+                if(!voting.voting_ended)
+                {
+                    var html = `
                     <li class="row">
                         <a href="/votingsystem/vote_page.php?${voting.id}">
                             <h4 class="title">
                                 ${voting.title}
                             </h4>
                     </li>
-                `
-                container.insertAdjacentHTML('beforeend', html);
+                    `;
+                    container.insertAdjacentHTML('beforeend', html);
+                }
             }
         })
     </script>

@@ -34,7 +34,7 @@ $_SESSION['last_activity'] = time();
             <button type="submit">Add voting</button>
         </form>
         <form action="manage_votings.php" method="get">
-            <button type="submit">End or remove voting</button>
+            <button type="submit">End voting</button>
         </form>
         <form action="count.php" method="get">
             <button type="submit">Count votes</button>
