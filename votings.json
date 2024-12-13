@@ -2,8 +2,8 @@
     {
         "id": 1,
         "voting_name": "voting1",
-        "title": "Glosowanie 1",
-        "description": "Glosowanie na staroste",
+        "title": "Class representative voting",
+        "description": "Voting for class representative",
         "candidates": [
             "Jan Kowalski",
             "Tomasz Kwiatkowski",
@@ -14,12 +14,23 @@
     {
         "id": 2,
         "voting_name": "voting2",
-        "title": "Glosowanie 2",
-        "description": "Opis glosowania 2",
+        "title": "Voting 2",
+        "description": "Voting description 2",
         "candidates": [
             "Ala Nowak",
             "Tadeusz Pan"
         ],
-        "voting_ended": true
+        "voting_ended": false
+    },
+    {
+        "id": 3,
+        "voting_name": "votingtest3",
+        "title": "Voting 3",
+        "description": "Voting 3 ",
+        "candidates": [
+            "test",
+            "test2"
+        ],
+        "voting_ended": false
     }
 ]

@@ -46,9 +46,8 @@ if (!empty($candidate))
     }
     else
     {
-        $hashed_email = sha1($email);
-        //$query = "select * from available_users where email = '$hashed_email' and voting = '$votingdb'";
-        $query = "select * from available_users where email = '$email' and voting = '$votingdb'";
+        $hashed_email = hash('sha256',$email);
+        $query = "select * from permitted_users where email = '$hashed_email' and voting = '$votingdb'";
         $result = mysqli_query($conn, $query);
         if($result)
         {

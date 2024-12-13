@@ -9,5 +9,58 @@ body {
 
 .intro {
     background-color: lightsteelblue;
-    
+    padding: 0;
+    padding-left: 17px;
+    padding-right: 17px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.welcome {
+    padding-right: 50px;
+    margin-left: 20px;
+}
+
+.menu {
+    margin: 20px auto;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+button {
+    display: block;
+    background-color: skyblue;
+    margin: 10px auto;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 200px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin: 2px auto;
+    max-width: 400px;
+}
+
+input, select {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+label {
+    display: block;
+    text-align: center;
+}
+
+.return {
+    background-color:cornflowerblue;
 }

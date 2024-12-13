@@ -22,8 +22,9 @@ $user_data = check_login($conn);
         <hr>
     </div>
     
-    <div id="welcome"> Hello, <?php echo $user_data['first_name']; ?>!</div>
+    <div id="welcome" class="welcome"> Hello, <?php echo $user_data['first_name']; ?>!<br>
     <a href="logout.php">Log out</a>
+    </div>
 
     <div class="main">
         <div class="intro">

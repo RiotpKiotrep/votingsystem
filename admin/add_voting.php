@@ -7,7 +7,7 @@ if (!isset($_SESSION['admin_auth']) || $_SESSION['admin_auth'] !== true)
     die;
 }
 
-$inactive_time_limit = 1*60; // 1 * 60 seconds
+$inactive_time_limit = 5*60; // 1 * 60 seconds
 if(isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactive_time_limit)
 {
     session_unset();
@@ -27,27 +27,32 @@ $votings = json_decode($votings_file, true);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style.css">
     <title>Add voting</title>
 </head>
 <body>
-    <h1>Add voting</h1>
-    <form action="voting_handler.php" method="post">
-        <label for="voting_name">Voting name (can contain only letters, numbers and underscores):</label>
-        <input type="text" id="voting_name" name="voting_name" required><br>
+    <div class="header"><h1>Add voting</h1></div>
+    <div class="menu">
+        <form action="voting_handler.php" method="post">
+            <label for="voting_name">Voting name (can contain only letters, numbers and underscores):</label>
+            <input type="text" id="voting_name" name="voting_name" required>
 
-        <label for="title">Title (visible name):</label>
-        <input type="text" id="title" name="title" required><br>
+            <label for="title">Title (visible name):</label>
+            <input type="text" id="title" name="title" required>
 
-        <label for="description">Description:</label>
-        <input type="text" id="description" name="description" required><br>
+            <label for="description">Description:</label>
+            <input type="text" id="description" name="description" required>
 
-        <label for="candidates">Candidates (separate with comma):</label>
-        <input type="text" id="candidates" name="candidates" required><br>
+            <label for="candidates">Candidates (separate with comma):</label>
+            <input type="text" id="candidates" name="candidates" required>
 
-        <button type="submit" name="action" value="add">Add voting</button>
-    </form>
-    <br>
+            <button type="submit" name="action" value="add">Add voting</button>
+        </form>
 
-    <input type="button" value="Return to admin panel" onclick="document.location.href='admin_panel.php'" />
+        <br>
+        <button class="return" onclick="document.location.href='admin_panel.php'">Return to admin panel</button>
+    </div>
+
+    
 </body>
 </html>

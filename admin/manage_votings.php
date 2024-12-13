@@ -7,7 +7,7 @@ if (!isset($_SESSION['admin_auth']) || $_SESSION['admin_auth'] !== true)
     die;
 }
 
-$inactive_time_limit = 1*60; // 1 * 60 seconds
+$inactive_time_limit = 5*60; // 1 * 60 seconds
 if(isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactive_time_limit)
 {
     session_unset();
@@ -27,23 +27,26 @@ $votings = json_decode($votings_file, true);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage votings</title>
+    <link rel="stylesheet" href="../style.css">
+    <title>End voting</title>
 </head>
 <body>
-    <h1>Manage votings</h1>
-    <form action="voting_handler.php" method="post">
-        <label for="voting_id">Choose voting to end or delete:</label>
-        <select id="voting_id" name="id" required>
-            <?php foreach($votings as $voting): if(!$voting['voting_ended']):?>
-                <option value="<?php echo $voting['id'];?>">
-                    <?php echo $voting['title'];?>
-                </option>
-            <?php endif; endforeach;?>
-        </select><br><br>
-        <button type="submit" name="action" value="end">End voting</button>
-    </form>
-    <br>
-
-    <input type="button" value="Return to admin panel" onclick="document.location.href='admin_panel.php'" />
+    <div class="header"><h1>End voting</h1></div>
+    <div class="menu">
+        <form action="voting_handler.php" method="post">
+            <label for="voting_id">Choose voting to end:</label>
+            <select id="voting_id" name="id" required>
+                <?php foreach($votings as $voting): if(!$voting['voting_ended']):?>
+                    <option value="<?php echo $voting['id'];?>">
+                        <?php echo $voting['title'];?>
+                    </option>
+                <?php endif; endforeach;?>
+            </select>
+            <button type="submit" name="action" value="end">End voting</button>
+        </form>
+    
+        <br>
+        <button class="return" onclick="document.location.href='admin_panel.php'">Return to admin panel</button>
+    </div>
 </body>
 </html>

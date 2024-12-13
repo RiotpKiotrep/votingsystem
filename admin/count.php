@@ -7,7 +7,7 @@ if (!isset($_SESSION['admin_auth']) || $_SESSION['admin_auth'] !== true)
     die;
 }
 
-$inactive_time_limit = 1*60; // 1 * 60 seconds
+$inactive_time_limit = 5*60; // 1 * 60 seconds
 if(isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactive_time_limit)
 {
     session_unset();
@@ -27,22 +27,23 @@ $votings = json_decode($votings_file, true);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style.css">
     <title>Count</title>
 </head>
 <body>
-    <h1>Count votes</h1>
+    <div class="header"><h1>Count votes</h1></div>
+    <div class="menu"> 
     <form method="post">
-        <label for="voting_id">Choose voting:</label>
-        <select id="voting_id" name="id" required>
-            <?php foreach($votings as $voting):?>
-                <option value="<?php echo $voting['id'];?>">
-                    <?php echo $voting['title'];?>
-                </option>
-            <?php endforeach;?>
-        </select><br><br>
-        <button type="submit" name="submit">Count votes</button>
-    </form>
-    <br>
+            <label for="voting_id">Choose voting:</label>
+            <select id="voting_id" name="id" required>
+                <?php foreach($votings as $voting):?>
+                    <option value="<?php echo $voting['id'];?>">
+                        <?php echo $voting['title'];?>
+                    </option>
+                <?php endforeach;?>
+            </select>
+            <button type="submit" name="submit">Count votes</button>
+        </form>
 
 
 <?php
@@ -146,7 +147,7 @@ if(isset($_POST['id']))
                     echo $can.": ".$num."<br>";
                 }
 
-                $query = "select count(email) as email_count from available_users where voting = '$votingdb'";
+                $query = "select count(email) as email_count from permitted_users where voting = '$votingdb'";
                 $result = mysqli_query($conn, $query);
                 if($result)
                 {
@@ -164,7 +165,8 @@ if(isset($_POST['id']))
 
 ?>
 
-<br><br>
-<input type="button" value="Return to admin panel" onclick="document.location.href='admin_panel.php'" />
+        <br>
+        <button class="return" onclick="document.location.href='admin_panel.php'">Return to admin panel</button>
+    </div>
 </body>
 </html>

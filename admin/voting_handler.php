@@ -7,7 +7,7 @@ if (!isset($_SESSION['admin_auth']) || $_SESSION['admin_auth'] !== true)
     die;
 }
 
-$inactive_time_limit = 1*60; // 1 * 60 seconds
+$inactive_time_limit = 5*60; // 1 * 60 seconds
 if(isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactive_time_limit)
 {
     session_unset();
