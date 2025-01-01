@@ -22,6 +22,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST')
     $votings_file = file_get_contents('../votings.json');
     $votings = json_decode($votings_file, true);
 
+    include("../functions.php");
+
     $action = $_POST['action'];
     if($action === 'add')
     {
@@ -77,6 +79,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST')
             if($conn->query($sql) === true)
             {
                 "Voting added successfully";
+
+                $log = "Voting $voting_name added";
+                logger($log);
             }
             else
             {
@@ -95,6 +100,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST')
                 break;
             }
         }
+        
+        $log = "Voting $voting_id ended";
+        logger($log);
     }
 
     file_put_contents('../votings.json', json_encode($votings, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));

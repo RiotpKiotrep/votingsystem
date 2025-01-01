@@ -80,7 +80,7 @@ if (!empty($candidate))
             }
         }
 
-        # encryption test with keys - generating keys
+        # key generation for the purpose of showcase - should be deleted in real version
         /*
         $cli_keypair = sodium_crypto_box_keypair();
         $cli_secret = sodium_crypto_box_secretkey($cli_keypair);
@@ -109,17 +109,7 @@ if (!empty($candidate))
         $sender_keypair = sodium_crypto_box_keypair_from_secretkey_and_publickey($client_secret, $server_public);
         $nonce = \random_bytes(\SODIUM_CRYPTO_BOX_NONCEBYTES);
         
-        // encrypt
         $candidate_encr = sodium_crypto_box($candidate.'|'.$_SERVER['HTTP_REFERER'], $nonce, $sender_keypair);
-        //echo bin2hex($candidate_encr);
-        //echo "\n";
-
-        // sign
-        /*
-        $candidate_signed = sodium_crypto_sign($candidate_encr, $sign_secret);
-        echo bin2hex($candidate_signed);
-        echo "\n";
-        */
 
         $token = generate_token();
 
@@ -133,21 +123,12 @@ if (!empty($candidate))
         }
 
         $msg = bin2hex($candidate_encr)."|".bin2hex($nonce);
-        //echo "<br>".$msg."<br>";
         mysqli_stmt_bind_param($stmt, "sss", $hashed_email, $msg, $token);
         mysqli_stmt_execute($stmt);
-
-        //echo "Record saved";
         
         $log = "Vote successfully sent";
         logger($log);
 
-        // decrypt test
-        /*
-        $recver_keypair = sodium_crypto_box_keypair_from_secretkey_and_publickey($server_secret, $client_public);
-        $can_decr = sodium_crypto_box_open($candidate_encr, $nonce, $recver_keypair);
-        echo $can_decr;
-        */
         $delete_link = "https://localhost/votingsystem/delete_vote.php?v=$votingdb&t=$token";
         $subject = "You voted on votingsystem";
         $message = "If the action wasn't performed by you, click this link to remove vote: \n$delete_link";

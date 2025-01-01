@@ -53,6 +53,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST')
     $dbPassword = "";
     $dbName = "voting_system_db";
 
+    include("../functions.php");
+
     $conn = new mysqli($host, $dbUsername, $dbPassword, $dbName);
     if(mysqli_connect_error())
     {
@@ -81,10 +83,16 @@ if($_SERVER['REQUEST_METHOD'] === 'POST')
             if (!mysqli_stmt_execute($stmt))
             {
                 echo "Failed to insert $email into voting $voting_id: ".mysqli_error($conn)."<br>";
+
+                $log = "Failed to insert $email into voting $voting_id";
+                logger($log);
             }
             else
             {
                 echo "Added $email to voting $voting_id successfully.<br>";
+                
+                $log = "Added $email to voting $voting_id";
+                logger($log);
             }
             echo "Operation successful";
         }

@@ -169,13 +169,6 @@ else
             db.value = voting.voting_name;
             candidates.insertAdjacentElement('beforeend', db);
             
-            /* ////// hidden email/UID value to pass for identity check
-            var uid = document.createElement("input")
-            uid.type = "hidden";
-            uid.name = "uid";
-            uid.value = 
-            candidates.insertAdjacentElement('beforeend', uid);
-            */
             var email = document.createElement("input")
             email.type = "hidden";
             email.name = "email";
