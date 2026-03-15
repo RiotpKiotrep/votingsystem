@@ -46,6 +46,9 @@ $votings = json_decode($votings_file, true);
             <label for="candidates">Candidates (separate with comma):</label>
             <input type="text" id="candidates" name="candidates" required>
 
+            <label for="expiry_date">Expiry date:</label>
+            <input type="datetime-local" id="expiry_date" name="expiry_date" required>
+
             <button type="submit" name="action" value="add">Add voting</button>
         </form>
 

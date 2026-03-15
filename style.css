@@ -64,3 +64,22 @@ label {
 .return {
     background-color:cornflowerblue;
 }
+
+.expired {
+    opacity: 0.5;
+}
+
+.expired-label {
+    color: red;
+    font-weight: bold;
+}
+
+.active-label {
+    color: green;
+    font-weight: bold;
+}
+
+.ended-label {
+    color: orange;
+    font-weight: bold;
+}

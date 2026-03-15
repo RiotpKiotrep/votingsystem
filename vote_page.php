@@ -39,6 +39,16 @@ if(!$votingdb)
     die;
 }
 
+$expiry_date = new DateTime($voting['expiry_date']);
+$now = new DateTime();
+
+if($now >= $expiry_date)
+{
+    echo "Voting has expired";
+    header("Refresh:5; url=index.php");
+    die;
+}
+
 if($voting['voting_ended'] === true)
 {
     echo "Voting has already ended";

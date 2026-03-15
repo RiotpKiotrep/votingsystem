@@ -66,6 +66,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST')
                 'title' => $_POST['title'],
                 'description' => $_POST['description'],
                 'candidates' => array_map('trim', explode(',', $_POST['candidates'])),
+                'expiry_date' => $_POST['expiry_date'],
                 'voting_ended' => false
             ];
             $votings[] = $new_voting;

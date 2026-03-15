@@ -38,7 +38,7 @@ $votings = json_decode($votings_file, true);
             <select id="voting_id" name="id" required>
                 <?php foreach($votings as $voting): if(!$voting['voting_ended']):?>
                     <option value="<?php echo $voting['id'];?>">
-                        <?php echo $voting['title'];?>
+                        <?php echo $voting['title'] . ' (expires: ' . $voting['expiry_date'] . ')';?>
                     </option>
                 <?php endif; endforeach;?>
             </select>

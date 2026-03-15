@@ -43,20 +43,38 @@ $user_data = check_login($conn);
         }).then(function(votings)
         {
             var container = document.querySelector('ol');
-            for(let voting of votings)
-            {
-                if(!voting.voting_ended)
-                {
-                    var html = `
-                    <li class="row">
-                        <a href="/votingsystem/vote_page.php?${voting.id}">
-                            <h4 class="title">
-                                ${voting.title}
-                            </h4>
-                    </li>
-                    `;
-                    container.insertAdjacentHTML('beforeend', html);
+            
+            var now = new Date();
+
+            for (let voting of votings) {
+                let expiry = new Date(voting.expiry_date);
+                let isExpired = now >= expiry;
+
+                let statusLabel = "";
+                let cssClass = "";
+
+                if (isExpired) {
+                    statusLabel = "<span class='expired-label'>Expired</span>";
+                    cssClass = "expired";
+                } else if (voting.voting_ended) {
+                    statusLabel = "<span class='ended-label'>Ended</span>";
+                    cssClass = "ended";
+                } else {
+                    statusLabel = "<span class='active-label'>Active</span>";
+                    cssClass = "active";
                 }
+
+                var html = `
+                    <li class="row ${cssClass}">
+                        <a href="/votingsystem/vote_page.php?${voting.id}">
+                            <h4 class="title">${voting.title}</h4>
+                            <div class="expiry">Expires: ${voting.expiry_date}</div>
+                            ${statusLabel}
+                        </a>
+                    </li>
+                `;
+
+                container.insertAdjacentHTML('beforeend', html);
             }
         })
     </script>

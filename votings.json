@@ -9,6 +9,7 @@
             "Tomasz Kwiatkowski",
             "Ala Nowak"
         ],
+        "expiry_date": "2026-03-15T12:30",
         "voting_ended": false
     },
     {
@@ -20,6 +21,7 @@
             "Ala Nowak",
             "Tadeusz Pan"
         ],
+        "expiry_date": "2026-03-15T13:30",
         "voting_ended": false
     },
     {
@@ -31,6 +33,20 @@
             "test",
             "test2"
         ],
+        "expiry_date": "2026-03-15T14:30",
+        "voting_ended": false
+    },
+    {
+        "id": 4,
+        "voting_name": "newvotingtest",
+        "title": "Voting Test",
+        "description": "Test voting",
+        "candidates": [
+            "Jan Kowalski",
+            "Test test",
+            "test Test"
+        ],
+        "expiry_date": "2026-03-15T11:30",
         "voting_ended": false
     }
 ]

@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-$login_hash = '$2y$10$kFZcVcoBJjEstNWQmOSwue.pTy2Vi2QcaKadLurwrNXkg1snC9DX6';
-$password_hash = '$2y$10$IGoD0pr8yuuqYG5uPIojNOwwfXeFpEPdmU5kCfLN6J1EzHMcvUNLi';
+$login_hash = '$2y$10$JZWr8gp1n/0vXZWqthB4YOei8uUING4pB.6fvJGTHpZw88heO4KIm';
+$password_hash = '$2y$10$C3lHCTYiSiPnui.s0tx0DOD.Ft7eNsG94Hgn.5DFNQl0PMkcW6RxC';
 
 if(isset($_GET['m']) && $_GET['m'] == 'session_expired')
 {

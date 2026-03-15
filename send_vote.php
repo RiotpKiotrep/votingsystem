@@ -23,6 +23,19 @@ foreach($votings as $v)
         break;
     }
 }
+
+$now = new DateTime();
+$expiry_date = new DateTime($voting['expiry_date']);
+
+if($voting && !$voting['voting_ended'] && $now >= $expiry_date)
+{
+    $log = "Tried sending vote into expired voting";
+    logger($log);
+    header("Refresh:5; url=index.php");
+    echo "Voting has expired";
+    die;
+}
+
 if($voting && $voting['voting_ended'] === true)
 {
     $log = "Tried sending vote into ended voting";
