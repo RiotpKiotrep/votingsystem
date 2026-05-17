@@ -1,8 +1,7 @@
 <?php
 session_start();
 
-include("connection.php");
-include("functions.php");
+require_once 'functions.php';
 
 if($_SERVER['REQUEST_METHOD'] == "POST")
 {
@@ -11,36 +10,18 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
 
     if(!empty($email) && !empty($password) && filter_var($email, FILTER_VALIDATE_EMAIL))
     {
-        $sql = "select * from users where email = ? limit 1";
-        $stmt = mysqli_stmt_init($conn);
+        $pdo = getDB('login_system_db');
 
-        if (!mysqli_stmt_prepare($stmt, $sql))
+        $stmt = $pdo->prepare("SELECT user_id, password, verified FROM users WHERE email = ? LIMIT 1");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if($user && password_verify($password, $user['password']) && $user['verified'] == 1)
         {
-            die(mysqli_error($conn));
-        }
-
-        mysqli_stmt_bind_param($stmt, "s", $email);
-        mysqli_stmt_execute($stmt);
-
-        $result = mysqli_stmt_get_result($stmt);
-
-        if($result)
-        {
-            if($result && mysqli_num_rows($result) > 0)
-            {
-                $user_data = mysqli_fetch_assoc($result);
-
-                if(password_verify($password, $user_data['password']) && $user_data['verified']==1)
-                {
-                    $_SESSION['user_id'] = $user_data['user_id'];
-
-                    $log = "User $email logged in";
-                    logger($log);
-
-                    header("Location: index.php");
-                    die;
-                }
-            }
+            $_SESSION['user_id'] = $user['user_id'];
+            logger("User $email logged in");
+            header("Location: index.php");
+            die;
         }
 
         $log = "User tried logging in with email: $email";

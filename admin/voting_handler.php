@@ -1,6 +1,8 @@
 <?php
 session_start();
 
+require_once '../functions.php';
+
 if (!isset($_SESSION['admin_auth']) || $_SESSION['admin_auth'] !== true)
 {
     header("Location: admin_auth.php");
@@ -22,9 +24,10 @@ if($_SERVER['REQUEST_METHOD'] === 'POST')
     $votings_file = file_get_contents('../votings.json');
     $votings = json_decode($votings_file, true);
 
-    include("../functions.php");
-
     $action = $_POST['action'];
+
+    $pdo = getDB('voting_system_db');
+
     if($action === 'add')
     {
         $voting_name = $_POST['voting_name'];
@@ -41,25 +44,16 @@ if($_SERVER['REQUEST_METHOD'] === 'POST')
             }
         }
 
-        $host = "localhost";
-        $dbUsername = "root";
-        $dbPassword = "";
-        $dbName = "voting_system_db";
-    
-        $conn = new mysqli($host, $dbUsername, $dbPassword, $dbName);
-        if(mysqli_connect_error())
+        $sql = "CREATE TABLE `$voting_name` (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            email VARCHAR(256) NOT NULL,
+            candidate VARCHAR(256) NOT NULL,
+            token VARCHAR(256) NOT NULL
+        )";
+        
+        try
         {
-            die('Connect error('. mysqli_connect_errno().')'. mysqli_connect_error());
-        }
-        else
-        {
-            $sql = "SHOW TABLES LIKE '".mysqli_real_escape_string($conn, $voting_name)."'";
-            $result = mysqli_query($conn, $sql);
-            if($result && mysqli_num_rows($result) > 0)
-            {
-                die("This voting name is unavailable");
-            }
-
+            $pdo->exec($sql);
             $new_voting = [
                 'id' => count($votings)+1,
                 'voting_name' => $_POST['voting_name'],
@@ -71,23 +65,13 @@ if($_SERVER['REQUEST_METHOD'] === 'POST')
             ];
             $votings[] = $new_voting;
 
-            $sql = "CREATE TABLE `$voting_name` (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                email VARCHAR(256) NOT NULL,
-                candidate VARCHAR(256) NOT NULL,
-                token VARCHAR(256) NOT NULL
-            )";
-            if($conn->query($sql) === true)
-            {
-                "Voting added successfully";
-
-                $log = "Voting $voting_name added";
-                logger($log);
-            }
-            else
-            {
-                "Error creating table: ".$conn->error;
-            }
+            file_put_contents('../votings.json', json_encode($votings, JSON_PRETTY_PRINT));
+            logger("Voting $voting_name added");
+            echo "Voting added successfully.";
+        }
+        catch (PDOException $e)
+        {
+            "Error creating table: ".$e->getMessage();
         }
     }
     elseif($action === 'end')
@@ -98,16 +82,13 @@ if($_SERVER['REQUEST_METHOD'] === 'POST')
             if($voting['id'] === $voting_id)
             {
                 $voting['voting_ended'] = true;
+                logger("Voting " . $voting['voting_name'] . " ended");
                 break;
             }
         }
-        
-        $log = "Voting $voting_id ended";
-        logger($log);
+        file_put_contents('../votings.json', json_encode($votings, JSON_PRETTY_PRINT));
+        echo "Operation successful.";
     }
-
-    file_put_contents('../votings.json', json_encode($votings, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    echo "Operation successful<br><br>";
 }
 
 

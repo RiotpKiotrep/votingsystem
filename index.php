@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-include("connection.php");
 include("functions.php");
 
 $user_data = check_login($conn);
@@ -22,7 +21,7 @@ $user_data = check_login($conn);
         <hr>
     </div>
     
-    <div id="welcome" class="welcome"> Hello, <?php echo $user_data['first_name']; ?>!<br>
+    <div id="welcome" class="welcome"> Hello, <?php echo htmlspecialchars($user_data['first_name']); ?>!<br>
     <a href="logout.php">Log out</a>
     </div>
 

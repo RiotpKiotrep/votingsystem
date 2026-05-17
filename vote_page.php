@@ -1,8 +1,7 @@
 <?php
 session_start();
 
-include("connection.php");
-include("functions.php");
+require_once 'functions.php';
 
 $user_data = check_login($conn);
 
@@ -10,97 +9,50 @@ $email = $user_data['email'];
 $log = "User $email has chosen a voting";
 logger($log);
 
-$id = $_SERVER['QUERY_STRING'] ?? null;
+$id = $_GET['id'] ?? null;
 if(!$id || !ctype_digit($id))
 {
-    echo "Wrong voting ID";
     header("Refresh:5; url=index.php");
-    die;
+    die("Wrong voting ID");
 }
 
-$votings_file = file_get_contents('votings.json');
-$votings = json_decode($votings_file, true);
-if(json_last_error() !== JSON_ERROR_NONE)
+$voting = getVotingConfigById($id);
+if(!$voting)
 {
-    die('Error decoding JSON: '.json_last_error_msg());
-}
-$votingdb = null;
-foreach ($votings as $voting) {
-    if ((int)$voting['id'] === (int)$id) {
-        $votingdb = $voting['voting_name'];
-        break;
-    }
-}
-
-if(!$votingdb)
-{
-    echo "Wrong voting ID";
     header("Refresh:5; url=index.php");
-    die;
+    die("Voting doesn't exist");
 }
 
 $expiry_date = new DateTime($voting['expiry_date']);
 $now = new DateTime();
 
-if($now >= $expiry_date)
+if($now >= $expiry_date || $voting['voting_ended'] === true)
 {
-    echo "Voting has expired";
     header("Refresh:5; url=index.php");
-    die;
+    die("Voting has expired or ended.");
 }
 
-if($voting['voting_ended'] === true)
+
+$pdo = getDB('voting_system_db');
+
+$hashed_email = hash('sha256',$email);
+$table = $voting['voting_name'];
+
+$stmt = $pdo->prepare("SELECT 1 FROM permitted_users WHERE email = ? AND voting = ?");
+$stmt->execute([$hashed_email, $table]);
+if(!$stmt->fetch()) 
 {
-    echo "Voting has already ended";
+    logger("Unauthorized access attempt by $email");
     header("Refresh:5; url=index.php");
-    die;
+    die("Not allowed to vote.");
 }
 
-$host = "localhost";
-$dbUsername = "root";
-$dbPassword = "";
-$dbName = "voting_system_db";
-
-$conn = new mysqli($host, $dbUsername, $dbPassword, $dbName);
-if(mysqli_connect_error())
-{
-    die('Connect error('. mysqli_connect_errno().')'. mysqli_connect_error());
-}
-else
-{
-    $hashed_email = hash('sha256',$email);
-    $query = "select * from permitted_users where email = '$hashed_email' and voting = '$votingdb'";
-    $result = mysqli_query($conn, $query);
-    if($result)
-    {
-        if($result && mysqli_num_rows($result) == 0)
-        {
-            $log = "User not allowed to vote";
-            logger($log);
-            
-            header("Refresh:5; url=index.php");
-
-            echo "Not allowed to vote";
-
-            die;
-        }
-    }
-    $query = "select * from $votingdb where email = '$hashed_email'";
-    $result = mysqli_query($conn, $query);
-    if($result)
-    {
-        if($result && mysqli_num_rows($result) > 0)
-        {
-            $log = "User has already voted";
-            logger($log);
-
-            header("Refresh:5; url=index.php");
-            
-            echo "Already voted";
-
-            die;
-        }
-    }
+$stmt = $pdo->prepare("SELECT 1 FROM `$table` WHERE email = ?");
+$stmt->execute([$hashed_email]);
+if($stmt->fetch()) {
+    logger("User $email tried voting twice");
+    header("Refresh:5; url=index.php");
+    die("Already voted.");
 }
 
 ?>
@@ -133,13 +85,9 @@ else
         </fieldset>
     </form>
     <script>
-        fetch('votings.json').then(function(response)
-        {
-            return response.json();
-        }).then(function(votings)
-        {
-            var id = window.location.search.slice(1);
-            var voting = votings.find(v => v.id == id);
+        fetch('votings.json').then(res => res.json()).then(votings => {
+            const id = new URLSearchParams(window.location.search).get('id');
+            const voting = votings.find(v => v.id == id);
         
             var header = document.querySelector('.header');
             var headerHtml = `
@@ -178,12 +126,12 @@ else
             db.name = "votingdb";
             db.value = voting.voting_name;
             candidates.insertAdjacentElement('beforeend', db);
-            
+
             var email = document.createElement("input")
             email.type = "hidden";
             email.name = "email";
-            email.value = "<?php echo $user_data['email']; ?>";
-            candidates.insertAdjacentElement('beforeend', email)
+            email.value = "<?php echo htmlspecialchars($user_data['email']); ?>";
+            candidates.insertAdjacentElement('beforeend', email);
         });
 
         

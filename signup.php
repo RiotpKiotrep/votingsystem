@@ -1,8 +1,7 @@
 <?php
 session_start();
 
-include("connection.php");
-include("functions.php");
+require_once 'functions.php';
 
 if($_SERVER['REQUEST_METHOD'] == "POST")
 {
@@ -17,43 +16,25 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
     }
     elseif(!empty($email) && !empty($password) && filter_var($email, FILTER_VALIDATE_EMAIL))
     {
+        $pdo = getDB('login_system_db');
         // check if user exists
-        $sql = "SELECT COUNT(*) as count FROM users WHERE email = ?";
-        $stmt = mysqli_stmt_init($conn);
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
+        $stmt->execute([$email]);
         
-        if (!mysqli_stmt_prepare($stmt, $sql))
-        {
-            die(mysqli_error($conn));
-        }
-
-        mysqli_stmt_bind_param($stmt, "s", $email);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $count = mysqli_fetch_assoc($result);
-        if($count['count'] > 0)
+        if($stmt->fetchColumn() > 0)
         {
             echo "User with this email already exists";
-            mysqli_stmt_close($stmt);
         }
         else
         {
-            mysqli_stmt_close($stmt);
-        
             // generate ID and add user
             $user_id = random_num(20);
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             $token = generate_token();
     
             $sql = "INSERT INTO users (user_id, email, first_name, last_name, password, verified, token) VALUES (?, ?, ?, ?, ?, 0, ?)";
-            $stmt = mysqli_stmt_init($conn);
-            
-            if (!mysqli_stmt_prepare($stmt, $sql))
-            {
-                die(mysqli_error($conn));
-            }
-    
-            mysqli_stmt_bind_param($stmt, "ssssss", $user_id, $email, $first_name, $last_name, $hashed_password, $token);
-            mysqli_stmt_execute($stmt);
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$user_id, $email, $first_name, $last_name, $hashed_password, $token]);
     
             $log = "User $user_id with email $email has been registered";
             logger($log);
@@ -75,7 +56,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
             header("Location: login.php");
             die;
         }
-    }  
+    }
     else
     {
         $log = "User has tried using incorrect email format: $email";

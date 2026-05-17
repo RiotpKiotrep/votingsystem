@@ -1,17 +1,16 @@
 <?php
 
+require_once 'db.php';
+
 function check_login($conn)
 {
+    $conn = getDB('login_system_db');
     if(isset($_SESSION['user_id']))
     {
-        $id = $_SESSION['user_id'];
-        $query = "select * from users where user_id = '$id' limit 1";
-        $result = mysqli_query($conn, $query);
-        if($result && mysqli_num_rows($result) > 0)
-        {
-            $user_data = mysqli_fetch_assoc($result);
-            return $user_data;
-        }
+        $stmt = $conn->prepare("SELECT * FROM users WHERE user_id = ? LIMIT 1");
+        $stmt->execute([$_SESSION['user_id']]);
+        $user_data = $stmt->fetch(PDO::FETCH_ASSOC);
+        if($user_data) return $user_data;
     }
     // redirect to login page
     $log = "User has been redirected to login page";
@@ -37,20 +36,26 @@ function random_num($length)
     return $text;
 }
 
-function logger($log)
-{
-    if(!file_exists('log.log'))
-    {
-        file_put_contents('log.log','');
+function getVotingConfig($votingName) {
+    $votings = json_decode(file_get_contents('votings.json'), true);
+    foreach ($votings as $v) {
+        if ($v['voting_name'] === $votingName) return $v;
     }
+    return null;
+}
 
+function getVotingConfigById($votingId) {
+    $votings = json_decode(file_get_contents('votings.json'), true);
+    foreach ($votings as $v) {
+        if ($v['id'] === $votingId) return $v;
+    }
+    return null;
+}
+
+function logger($log) {
     $ip = $_SERVER['REMOTE_ADDR'];
-    $time = date('m/d/y h:iA', time());
-
-    $contents = file_get_contents('log.log');
-    $contents .= "$ip\t$time\t$log\r";
-
-    file_put_contents('log.log', $contents);
+    $time = date('m/d/y h:iA');
+    file_put_contents('log.log', "$ip\t$time\t$log\r\n", FILE_APPEND);
 }
 
 function generate_token()

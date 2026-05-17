@@ -1,6 +1,8 @@
 <?php
 session_start();
 
+require_once '../functions.php';
+
 if (!isset($_SESSION['admin_auth']) || $_SESSION['admin_auth'] !== true)
 {
     header("Location: admin_auth.php");
@@ -17,12 +19,7 @@ if(isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > 
 }
 $_SESSION['last_activity'] = time();
 
-$votings_file = file_get_contents('../votings.json');
-$votings = json_decode($votings_file, true);
-if(json_last_error() !== JSON_ERROR_NONE)
-{
-    die('Error decoding JSON: '.json_last_error_msg());
-}
+$votings = json_decode(file_get_contents('../votings.json'), true);
 
 ?>
 
@@ -94,8 +91,8 @@ if(json_last_error() !== JSON_ERROR_NONE)
             <label for="voting_id">Choose voting:</label>
             <select id="voting_id" name="id" required>
                 <?php foreach($votings as $voting): if(!$voting['voting_ended']):?>
-                    <option value="<?php echo $voting['id'];?>">
-                        <?php echo $voting['title'];?>
+                    <option value="<?= htmlspecialchars($voting['id']) ?>">
+                        <?php htmlspecialchars($voting['title']) ?>
                     </option>
                 <?php endif; endforeach;?>
             </select>
