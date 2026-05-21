@@ -60,11 +60,23 @@ if (!empty($candidate))
         die("Already voted.");
     }
 
+    // blind signature
+    $signature = $_POST['signature'] ?? null;
+    if(!$signature) die("Signature missing.");
+
+    $public_key = GetPublicKey();
+    if(!$public_key->verify($candidate, base64_decode($signature)))
+    {
+        $log = "Invalid signature by $email";
+        logger($log);
+        die("Invalid signature.");
+    }
+
     // send vote
     $token = generate_token();
     
-    $stmt = $pdo->prepare("INSERT INTO `$votingdb` (email, candidate, token) VALUES (?, ?, ?)");
-    $stmt->execute([$hashed_email, $candidate, $token]);
+    $stmt = $pdo->prepare("INSERT INTO `$votingdb` (signature, candidate, token) VALUES (?, ?, ?)");
+    $stmt->execute([$signature, $candidate, $token]);
 
     logger("Vote successfully sent by $email");
 

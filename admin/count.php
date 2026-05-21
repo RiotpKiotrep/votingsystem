@@ -1,6 +1,8 @@
 <?php
 session_start();
 
+use phpseclib3\Crypt\RSA;
+
 if (!isset($_SESSION['admin_auth']) || $_SESSION['admin_auth'] !== true)
 {
     header("Location: admin_auth.php");
@@ -88,8 +90,17 @@ if(isset($_POST['id']))
             $total_count = 0;
             $error_count = 0;
                 
+            $public_key = RSA::loadPublicKey(file_get_contents('../public.pem'));
+
             foreach($rows as $row)
             {
+                $signature_raw = base64_decode($row['signature']);
+
+                if (!$public_key->verify($row['candidate'], $signature_raw)) {
+                    $error_count++;
+                    continue;
+                }
+
                 $params = explode("|", $row['candidate']);
                 if(count($params) !== 2)
                 { 

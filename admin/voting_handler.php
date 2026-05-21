@@ -46,7 +46,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST')
 
         $sql = "CREATE TABLE `$voting_name` (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            email VARCHAR(256) NOT NULL,
+            signature TEXT NOT NULL,
             candidate VARCHAR(256) NOT NULL,
             token VARCHAR(256) NOT NULL
         )";

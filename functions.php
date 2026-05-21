@@ -73,3 +73,18 @@ function validate_password($password)
 
     return strlen($password) >= $min_length && $uppercase && $lowercase && $digit && $special;
 }
+
+use phpseclib3\Crypt\RSA;
+
+function GetRSAKeys()
+{
+    $private = RSA::loadPrivateKey(file_get_contents('private.pem'));
+    $public = RSA::loadPublicKey(file_get_contents('public.pem'));
+    return [$private, $public];
+}
+
+function GetPublicKey()
+{
+    $public = RSA::loadPublicKey(file_get_contents('public.pem'));
+    return $public;
+}

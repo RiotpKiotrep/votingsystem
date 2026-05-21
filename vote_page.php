@@ -68,7 +68,7 @@ if($stmt->fetch()) {
 <body>
     <div class="header"></div>
     
-    <form action="send_vote.php" method="post">
+    <form id="voteForm">
         <fieldset>
             <!--
             <fieldset>
@@ -134,7 +134,43 @@ if($stmt->fetch()) {
             candidates.insertAdjacentElement('beforeend', email);
         });
 
-        
+        document.getElementById('voteForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const selected = document.querySelector('input[name="candidate"]:checked');
+            if (!selected) { alert('Please choose a candidate'); return; }
+            const vote = selected.value;
+
+            try {
+                let blindedVote = blind(vote); 
+
+                const authResponse = await fetch('authorize_vote.php', {
+                    method: 'POST',
+                    body: new URLSearchParams({ blinded_vote: blindedVote })
+                });
+                const blindedSignature = await authResponse.text();
+
+                let realSignature = unblind(blindedSignature);
+
+                const submitResponse = await fetch('send_vote.php', {
+                    method: 'POST',
+                    body: new URLSearchParams({
+                        candidate: vote,
+                        signature: realSignature,
+                        votingdb: document.querySelector('input[name="votingdb"]').value,
+                        email: document.querySelector('input[name="email"]').value
+                    })
+                });
+
+                const result = await submitResponse.text();
+                alert(result);
+                window.location.href = 'index.php';
+
+            } catch (err) {
+                console.error("Voting failed:", err);
+                alert("An error occurred during secure submission.");
+            }
+        });
     </script>
 </body>
 </html>
