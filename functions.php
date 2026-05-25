@@ -2,7 +2,7 @@
 
 require_once 'db.php';
 
-function check_login($conn)
+function check_login()
 {
     $conn = getDB('login_system_db');
     if(isset($_SESSION['user_id']))

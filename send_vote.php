@@ -1,6 +1,6 @@
 <?php
 require_once 'functions.php';
-
+check_login();
 $email = $_POST['email'];
 $candidate = $_POST['candidate'];
 $votingdb = $_POST['votingdb'];

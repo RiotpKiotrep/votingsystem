@@ -3,7 +3,7 @@
 session_start();
 
 require_once 'functions.php';
-
+check_login();
 if(isset($_SESSION['user_id'])) {
     $pdo = getDB('login_system_db');
     $stmt = $pdo->prepare("SELECT email FROM users WHERE user_id = ?");

@@ -1,7 +1,7 @@
 <?php
 
 require_once 'functions.php';
-
+check_login();
 $votingdb = $_GET['v'] ?? null;
 $token = $_GET['t'] ?? null;
 
