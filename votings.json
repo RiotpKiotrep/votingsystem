@@ -9,44 +9,20 @@
             "Tomasz Kwiatkowski",
             "Ala Nowak"
         ],
-        "expiry_date": "2026-03-15T12:30",
-        "voting_ended": false
+        "expiry_date": "2026-06-28T12:30",
+        "voting_ended": true
     },
     {
         "id": 2,
-        "voting_name": "voting2",
-        "title": "Voting 2",
-        "description": "Voting description 2",
-        "candidates": [
-            "Ala Nowak",
-            "Tadeusz Pan"
-        ],
-        "expiry_date": "2026-03-15T13:30",
-        "voting_ended": false
-    },
-    {
-        "id": 3,
-        "voting_name": "votingtest3",
-        "title": "Voting 3",
-        "description": "Voting 3 ",
-        "candidates": [
-            "test",
-            "test2"
-        ],
-        "expiry_date": "2026-03-15T14:30",
-        "voting_ended": false
-    },
-    {
-        "id": 4,
         "voting_name": "newvotingtest",
-        "title": "Voting Test",
-        "description": "Test voting",
+        "title": "Name of voting",
+        "description": "desc of voting",
         "candidates": [
             "Jan Kowalski",
             "Test test",
             "test Test"
         ],
-        "expiry_date": "2026-03-15T11:30",
+        "expiry_date": "2026-05-25T08:30",
         "voting_ended": false
     }
 ]

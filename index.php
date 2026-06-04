@@ -36,10 +36,9 @@ $user_data = check_login();
         </div>
     </div>
     <script>
-        fetch('votings.json').then(function(response)
-        {
-            return response.json();
-        }).then(function(votings)
+        fetch('votings.json?cacheBust=' + Date.now())
+        .then(response => response.json())
+        .then(function(votings)
         {
             var container = document.querySelector('ol');
             
@@ -65,7 +64,7 @@ $user_data = check_login();
 
                 var html = `
                     <li class="row ${cssClass}">
-                        <a href="/votingsystem/vote_page.php?${voting.id}">
+                        <a href="/votingsystem/vote_page.php?id=${voting.id}">
                             <h4 class="title">${voting.title}</h4>
                             <div class="expiry">Expires: ${voting.expiry_date}</div>
                             ${statusLabel}

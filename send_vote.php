@@ -1,103 +1,88 @@
 <?php
+session_start();
 require_once 'functions.php';
-check_login();
-$email = $_POST['email'];
-$candidate = $_POST['candidate'];
-$votingdb = $_POST['votingdb'];
+$user_data = check_login();
+$email = $_POST['email'] ?? $user_data['email'];
+$candidate = $_POST['candidate'] ?? null;
+$votingdb = $_POST['votingdb'] ?? null;
+$signature = $_POST['signature'] ?? null;
 
-$log = "User $email has tried sending vote in voting: $votingdb";
-logger($log);
+if (!$candidate || !$votingdb || !$signature) {
+    die("Missing data.");
+}
 
 $voting = getVotingConfig($votingdb);
-if(!$voting)
-{
-    $log = "Tried sending vote into invalid voting";
-    logger($log);
-    header("Refresh:5; url=index.php");
-    echo "Voting doesn't exist";
+if (!$voting || $voting['voting_ended']) {
+    die("Voting is unavailable.");
 }
 
-$now = new DateTime();
-$expiry_date = new DateTime($voting['expiry_date']);
+$pdo = getDB('voting_system_db');
+$hashed_email = hash('sha256', $email);
 
-if(!$voting['voting_ended'] && $now >= $expiry_date)
-{
-    $log = "Tried sending vote into expired voting";
-    logger($log);
-    header("Refresh:5; url=index.php");
-    echo "Voting has expired";
-    die;
+// permission check
+$stmt = $pdo->prepare("SELECT voted FROM permitted_users WHERE email = ? AND voting = ?");
+$stmt->execute([$hashed_email, $votingdb]);
+$perm = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$perm) die("Access denied.");
+if ($perm['voted'] == 1) die("You have already voted.");
+
+// cryptographic check for signature
+$pub = openssl_pkey_get_public(file_get_contents("public.pem"));
+$details = openssl_pkey_get_details($pub);
+$n = gmp_init(bin2hex($details['rsa']['n']), 16);
+$e = gmp_init(bin2hex($details['rsa']['e']), 16);
+
+$expected_hex = hash("sha256", $candidate);
+$expected = gmp_init($expected_hex, 16);
+$sig = gmp_init($signature, 10);
+
+$verified = gmp_powm($sig, $e, $n);
+
+if (gmp_cmp($verified, $expected) !== 0) {
+    die("Invalid signature.");
 }
 
-if($voting && $voting['voting_ended'] === true)
-{
-    $log = "Tried sending vote into ended voting";
-    logger($log);
-    header("Refresh:5; url=index.php");
-    echo "Voting has already ended";
-    die;
-}
+// check whether signature was already used
+$stmt = $pdo->prepare("SELECT 1 FROM `$votingdb` WHERE signature = ?");
+$stmt->execute([$signature]);
+if ($stmt->fetch()) die("This vote signature was already used.");
 
-if (!empty($candidate))
-{
-    $pdo = getDB();
+// generate token for deletion
+$token = generate_token();
 
-    $hashed_email = hash('sha256',$email);
+$server_public = hex2bin("5f9b367104d8ed5e88fa4e410fe529678d55520a1469392dc447a8d41f4ccf49");
 
-    // permission check
-    $stmt = $pdo->prepare("SELECT id FROM permitted_users WHERE email = ? AND voting = ?");
-    $stmt->execute([$hashed_email, $votingdb]);
-    if ($stmt->rowCount() == 0) {
-        logger("User $email not allowed to vote in $votingdb");
-        die("Not allowed to vote.");
-    }
+$plain_data = $candidate . '|' . ($_SERVER['HTTP_REFERER'] ?? 'direct');
 
-    // voted already check
-    $stmt = $pdo->prepare("SELECT id FROM `$votingdb` WHERE email = ?");
-    $stmt->execute([$hashed_email]);
-    if ($stmt->rowCount() > 0) {
-        logger("User $email has already voted in $votingdb");
-        die("Already voted.");
-    }
+// sealed box encryption
+$encrypted_candidate = sodium_crypto_box_seal($plain_data, $server_public);
+$encrypted_candidate_hex = bin2hex($encrypted_candidate);
 
-    // blind signature
-    $signature = $_POST['signature'] ?? null;
-    if(!$signature) die("Signature missing.");
+try {
+    $pdo->beginTransaction();
 
-    $public_key = GetPublicKey();
-    if(!$public_key->verify($candidate, base64_decode($signature)))
-    {
-        $log = "Invalid signature by $email";
-        logger($log);
-        die("Invalid signature.");
-    }
-
-    // send vote
-    $token = generate_token();
-    
+    // email for deletion
     $stmt = $pdo->prepare("INSERT INTO `$votingdb` (signature, candidate, token) VALUES (?, ?, ?)");
-    $stmt->execute([$signature, $candidate, $token]);
+    $stmt->execute([$signature, $encrypted_candidate_hex, $token]);
 
-    logger("Vote successfully sent by $email");
+    // mark as voted in permission table
+    $stmt = $pdo->prepare("UPDATE permitted_users SET voted = 1 WHERE email = ? AND voting = ?");
+    $stmt->execute([$hashed_email, $votingdb]);
 
-    // send confirmation email
+    $pdo->commit();
+
+    // confirmation email
     $delete_link = "https://localhost/votingsystem/delete_vote.php?v=$votingdb&t=$token";
-    $subject = "You voted on votingsystem";
-    $message = "If the action wasn't performed by you, click this link to remove vote: \n$delete_link";
+    $subject = "Vote Confirmation";
+    $message = "You have successfully voted. If this wasn't you, use this link to remove your vote: \n$delete_link";
     
-    if(mail($email, $subject, $message)) {
-        logger("Confirmation email sent to $email");
-    } else {
-        logger("Confirmation email failed to send to $email");
-    }
-    
+    mail($email, $subject, $message);
+
     echo "Vote successfully sent.";
-    header("Refresh:5; url=index.php");
-    die;
+
+} catch (Exception $e) {
+    $pdo->rollBack();
+    logger($e->getMessage());
+    die("Transaction failed: " . $e->getMessage());
 }
-else
-{
-    echo "Missing candidate choice";
-    die();
-}
-?>

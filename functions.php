@@ -37,7 +37,7 @@ function random_num($length)
 }
 
 function getVotingConfig($votingName) {
-    $votings = json_decode(file_get_contents('votings.json'), true);
+    $votings = json_decode(file_get_contents(__DIR__ . '/votings.json'), true);
     foreach ($votings as $v) {
         if ($v['voting_name'] === $votingName) return $v;
     }
@@ -45,7 +45,8 @@ function getVotingConfig($votingName) {
 }
 
 function getVotingConfigById($votingId) {
-    $votings = json_decode(file_get_contents('votings.json'), true);
+    $votingId = (int)$votingId;
+    $votings = json_decode(file_get_contents(__DIR__ . '/votings.json'), true);
     foreach ($votings as $v) {
         if ($v['id'] === $votingId) return $v;
     }

@@ -80,55 +80,84 @@ if(isset($_POST['id']))
             $log = "Displayed vote count for: $votingdb";
             logger($log);
 
-            $recver_keypair = sodium_crypto_box_keypair_from_secretkey_and_publickey($keys['server_secret'], $keys['client_public']);
-
-            $stmt = $pdo->prepare("SELECT candidate FROM `$votingdb`");
-            $stmt->execute();
-            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
             $count = [];
             $total_count = 0;
             $error_count = 0;
                 
-            $public_key = RSA::loadPublicKey(file_get_contents('../public.pem'));
+            // rsa keys for gmp verification
+            $pub_content = file_get_contents('../public.pem');
+            $pub_info = openssl_pkey_get_details(openssl_pkey_get_public($pub_content));
+            $n = gmp_init(bin2hex($pub_info['rsa']['n']), 16);
+            $e = gmp_init(bin2hex($pub_info['rsa']['e']), 16);
+
+            // sodium key for decryption
+            $server_secret = $keys['server_secret'];
+            $server_public = sodium_crypto_box_publickey_from_secretkey($server_secret);
+
+            $server_keypair = sodium_crypto_box_keypair_from_secretkey_and_publickey(
+                $server_secret,
+                $server_public
+            );
+
+
+            // fetch signature and candidate
+            $stmt = $pdo->prepare("SELECT signature, candidate FROM `$votingdb`");
+            $stmt->execute();
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             foreach($rows as $row)
             {
-                $signature_raw = base64_decode($row['signature']);
+                try {
+                    // decrypt
+                    $hex = $row['candidate'];
 
-                if (!$public_key->verify($row['candidate'], $signature_raw)) {
+                    if (!ctype_xdigit($hex)) {
+                        throw new Exception("Candidate field is not valid hex");
+                    }
+
+                    $encrypted = hex2bin($hex);
+                    if ($encrypted === false) {
+                        throw new Exception("hex2bin failed");
+                    }
+
+                    $decrypted = sodium_crypto_box_seal_open($encrypted, $server_keypair);
+                    if ($decrypted === false) {
+                        throw new Exception("Decryption failed");
+                    }
+
+                    // plit candidate name from referer
+                    $parts = explode("|", $decrypted);
+                    if (count($parts) < 2) throw new Exception("Malformed data");
+                    
+                    $candidate_name = $parts[0];
+                    $referer = $parts[1];
+
+                    // verify blind signature
+                    $sig = gmp_init($row['signature'], 10);
+                    $expected_hash = gmp_init(hash("sha256", $candidate_name), 16);
+                    
+                    // rsa check: s^e mod n == hash(candidate)
+                    $actual_hash = gmp_powm($sig, $e, $n);
+
+                    if (gmp_cmp($actual_hash, $expected_hash) !== 0) {
+                        $error_count++;
+                        logger("Signature mismatch in $votingdb");
+                        continue;
+                    }
+
+                    // verify referer
+                    if (strpos($referer, "vote_page.php?id=" . $voting_id) !== false) {
+                        $count[$candidate_name] = ($count[$candidate_name] ?? 0) + 1;
+                        $total_count++;
+                    } else {
+                        logger("Referer mismatch: " . $referer);
+                        $error_count++;
+                    }
+
+                } catch (Exception $exception) {
                     $error_count++;
+                    logger("Error processing vote: " . $exception->getMessage());
                     continue;
-                }
-
-                $params = explode("|", $row['candidate']);
-                if(count($params) !== 2)
-                { 
-                    $error_count++;
-                    continue;
-                }
-
-                try
-                {
-                    $decrypted = sodium_crypto_box_open(hex2bin($params[0]), hex2bin($params[1]), $recver_keypair);
-                }
-                catch(Exception $e)
-                {
-                    $error_count += 1;
-                    continue;
-                }
-                //echo $decrypted;
-                $candidate = explode("|", $decrypted);
-                if($candidate[1] == "http://localhost/votingsystem/vote_page.php?".$voting_id)
-                {
-                    $name = $candidate[0];
-                    $count[$name] = ($count[$name] ?? 0) + 1;
-                    $total_count += 1;
-                    //echo "<br>".$count[$candidate[0]]."<br>";
-                }
-                else
-                {
-                    $error_count += 1;
                 }
             }
             foreach($count as $can => $num)

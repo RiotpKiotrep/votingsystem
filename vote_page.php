@@ -47,13 +47,22 @@ if(!$stmt->fetch())
     die("Not allowed to vote.");
 }
 
-$stmt = $pdo->prepare("SELECT 1 FROM `$table` WHERE email = ?");
-$stmt->execute([$hashed_email]);
+$stmt = $pdo->prepare("SELECT 1 FROM permitted_users WHERE email = ? AND voting = ? AND voted = 1");
+$stmt->execute([$hashed_email, $table]);
 if($stmt->fetch()) {
     logger("User $email tried voting twice");
     header("Refresh:5; url=index.php");
     die("Already voted.");
 }
+
+$pub = openssl_pkey_get_public(file_get_contents("public.pem"));
+$details = openssl_pkey_get_details($pub);
+
+$n_hex = bin2hex($details['rsa']['n']);
+$n_hex = strtolower($n_hex);
+
+$e_raw = $details['rsa']['e'];
+$e_int = gmp_intval(gmp_import($e_raw));
 
 ?>
 
@@ -64,6 +73,63 @@ if($stmt->fetch()) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script>
+        const RSA_N = <?php echo json_encode($n_hex); ?>;
+        const RSA_E = <?php echo json_encode($e_int); ?>;
+
+        // blinding math functions
+        function modPow(base, exp, mod) {
+            base = base % mod;
+            let result = 1n;
+            while (exp > 0) {
+                if (exp & 1n) result = (result * base) % mod;
+                base = (base * base) % mod;
+                exp >>= 1n;
+            }
+            return result;
+        }
+
+        function modInverse(a, m) {
+            let m0 = m, x0 = 0n, x1 = 1n;
+            while (a > 1n) {
+                let q = a / m;
+                [a, m] = [m, a % m];
+                [x0, x1] = [x1 - q * x0, x0];
+            }
+            return (x1 + m0) % m0;
+        }
+
+        async function sha256hex(str) {
+            const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+            return Array.from(new Uint8Array(buf)).map(x => x.toString(16).padStart(2, "0")).join("");
+        }
+
+        async function blind(message) {
+            const hashHex = await sha256hex(message);
+            const m = BigInt("0x" + hashHex);
+            const n = BigInt("0x" + RSA_N);
+            const e = BigInt(RSA_E);
+
+            let r;
+            do {
+                r = BigInt("0x" + crypto.getRandomValues(new Uint8Array(32))
+                    .reduce((a,b)=>a+b.toString(16).padStart(2,"0"),""));
+            } while (r % n === 0n);
+
+            window._blind_r = r;
+
+            const blinded = (m * modPow(r, e, n)) % n;
+            return blinded.toString();
+        }
+
+        function unblind(signedBlinded) {
+            const n = BigInt("0x" + RSA_N);
+            const s = BigInt(signedBlinded);
+            const rInv = modInverse(window._blind_r, n);
+            const unblinded = (s * rInv) % n;
+            return unblinded.toString();
+        }
+    </script>
 </head>
 <body>
     <div class="header"></div>
@@ -140,25 +206,43 @@ if($stmt->fetch()) {
             const selected = document.querySelector('input[name="candidate"]:checked');
             if (!selected) { alert('Please choose a candidate'); return; }
             const vote = selected.value;
+            
+            // Get the voting name from the hidden input field
+            const votingdbValue = document.querySelector('input[name="votingdb"]').value;
+            const emailValue = document.querySelector('input[name="email"]').value;
 
             try {
-                let blindedVote = blind(vote); 
+                let blindedVote = await blind(vote); 
 
+                // 1. Request Authorization (Blind Signature)
+                // We must send votingdb so PHP can check permissions
                 const authResponse = await fetch('authorize_vote.php', {
                     method: 'POST',
-                    body: new URLSearchParams({ blinded_vote: blindedVote })
+                    body: new URLSearchParams({ 
+                        blinded_vote: blindedVote,
+                        votingdb: votingdbValue 
+                    })
                 });
-                const blindedSignature = await authResponse.text();
+                
+                const authResult = await authResponse.text();
 
-                let realSignature = unblind(blindedSignature);
+                // Check if the server returned an error message instead of a numeric signature
+                if (isNaN(authResult) || authResult.trim() === "") {
+                    alert("Authorization failed: " + authResult);
+                    return;
+                }
 
+                // 2. Unblind the signature locally
+                let realSignature = unblind(authResult);
+
+                // 3. Submit the actual vote anonymously
                 const submitResponse = await fetch('send_vote.php', {
                     method: 'POST',
                     body: new URLSearchParams({
                         candidate: vote,
                         signature: realSignature,
-                        votingdb: document.querySelector('input[name="votingdb"]').value,
-                        email: document.querySelector('input[name="email"]').value
+                        votingdb: votingdbValue,
+                        email: emailValue
                     })
                 });
 
