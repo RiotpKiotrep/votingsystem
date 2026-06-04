@@ -1,21 +1,7 @@
 <?php
 session_start();
-
-if (!isset($_SESSION['admin_auth']) || $_SESSION['admin_auth'] !== true)
-{
-    header("Location: admin_auth.php");
-    die;
-}
-
-$inactive_time_limit = 5*60; // 1 * 60 seconds
-if(isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactive_time_limit)
-{
-    session_unset();
-    session_destroy();
-    header("Location: admin_auth.php?m=session_expired");
-    die;
-}
-$_SESSION['last_activity'] = time();
+require_once '../functions.php';
+check_admin_login();
 
 ?>
 

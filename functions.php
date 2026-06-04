@@ -20,6 +20,44 @@ function check_login()
     die;
 }
 
+function check_admin_login()
+{
+    // check for IP change
+    if (!isset($_SESSION['ua']) || $_SESSION['ua'] !== $_SERVER['HTTP_USER_AGENT'])
+    {
+        session_unset();
+        session_destroy();
+        header("Location: admin/admin_auth.php?m=session_expired");
+        die;
+    }
+
+    // check timeout
+    $inactive_time_limit = 5*60; // 1 * 60 seconds
+    if(isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactive_time_limit)
+    {
+        session_unset();
+        session_destroy();
+        header("Location: admin/admin_auth.php?m=session_expired");
+        die;
+    }
+    $_SESSION['last_activity'] = time();
+
+    $conn = getDB('admin_system_db');
+    if(isset($_SESSION['admin_id']))
+    {
+        $stmt = $conn->prepare("SELECT * FROM admins WHERE admin_id = ? LIMIT 1");
+        $stmt->execute([$_SESSION['admin_id']]);
+        $admin_data = $stmt->fetch(PDO::FETCH_ASSOC);
+        if($admin_data) return $admin_data;
+    }
+    // redirect to login page
+    $log = "Admin has been redirected to admin panel login page";
+    logger($log);
+
+    header("location: admin/admin_auth.php");
+    die;
+}
+
 function random_num($length)
 {
     $text = "";

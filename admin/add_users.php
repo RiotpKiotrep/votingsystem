@@ -2,22 +2,7 @@
 session_start();
 
 require_once '../functions.php';
-
-if (!isset($_SESSION['admin_auth']) || $_SESSION['admin_auth'] !== true)
-{
-    header("Location: admin_auth.php");
-    die;
-}
-
-$inactive_time_limit = 5*60; // 1 * 60 seconds
-if(isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactive_time_limit)
-{
-    session_unset();
-    session_destroy();
-    header("Location: admin_auth.php?m=session_expired");
-    die;
-}
-$_SESSION['last_activity'] = time();
+check_admin_login();
 
 $votings = json_decode(file_get_contents('../votings.json'), true);
 
