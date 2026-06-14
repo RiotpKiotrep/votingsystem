@@ -27,7 +27,7 @@ function check_admin_login()
     {
         session_unset();
         session_destroy();
-        header("Location: admin/admin_auth.php?m=session_expired");
+        header("Location: /votingsystem/admin/admin_auth.php?m=session_expired");
         die;
     }
 
@@ -37,7 +37,7 @@ function check_admin_login()
     {
         session_unset();
         session_destroy();
-        header("Location: admin/admin_auth.php?m=session_expired");
+        header("Location: /votingsystem/admin/admin_auth.php?m=session_expired");
         die;
     }
     $_SESSION['last_activity'] = time();
@@ -54,7 +54,7 @@ function check_admin_login()
     $log = "Admin has been redirected to admin panel login page";
     logger($log);
 
-    header("location: admin/admin_auth.php");
+    header("location: /votingsystem/admin/admin_auth.php");
     die;
 }
 

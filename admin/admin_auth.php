@@ -17,7 +17,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
     {
         $pdo = getDB('admin_system_db');
 
-        $stmt = $pdo->prepare("SELECT admin_id, password, role, verified FROM admins WHERE email = ? LIMIT 1");
+        $stmt = $pdo->prepare("SELECT admin_id, email, password, role, verified FROM admins WHERE email = ? LIMIT 1");
         $stmt->execute([$email]);
         $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -25,6 +25,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
         {
             session_regenerate_id(true);
             $_SESSION['admin_id'] = $admin['admin_id'];
+            $_SESSION['admin_email'] = $admin['email'];
             $_SESSION['admin_role'] = $admin['role'];
             $_SESSION['last_activity'] = time();
             $_SESSION['ua'] = $_SERVER['HTTP_USER_AGENT'];
