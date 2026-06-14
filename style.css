@@ -61,8 +61,12 @@ label {
     text-align: center;
 }
 
-.return {
-    background-color:cornflowerblue;
+.return_button {
+    background-color: cornflowerblue;
+}
+
+.logout_button {
+    background-color:tomato;
 }
 
 .expired {

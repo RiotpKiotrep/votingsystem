@@ -65,13 +65,38 @@ $selectedVotingId = $_GET['id'] ?? '';
             const buttons = document.querySelectorAll('.feature-btn');
 
             if (!votingId) {
-                buttons.forEach(btn => btn.disabled = true);
+                buttons.forEach(btn => {
+                    const module = btn.dataset.module;
+
+                    // disable buttons requiring a voting selected
+                    if (module === 'add_voting' || module === 'admin_management') {
+                        btn.disabled = false;
+                    } else {
+                        btn.disabled = true;
+                    }
+                });
+                // return home if a module is open
+                const container = document.getElementById('module_container');
+                if (container.dataset.module) {
+                    returnHome();
+                }
                 return;
+            }
+
+            const currentModule = document.getElementById('module_container').dataset.module;
+            if (currentModule) {
+                loadModule(currentModule);
             }
 
             checkPermissions(votingId, allowedModules => {
                 buttons.forEach(btn => {
                     const module = btn.dataset.module;
+
+                    if (module === 'add_voting' || module === 'admin_management') {
+                        btn.disabled = false;
+                        return;
+                    }
+
                     btn.disabled = !allowedModules.includes(module);
                 });
             });
@@ -143,12 +168,19 @@ $selectedVotingId = $_GET['id'] ?? '';
 
         function loadModule(moduleName) {
             const votingId = document.getElementById('voting_id').value;
-            if (!votingId) {
+
+            const requiresVoting = !['add_voting', 'admin_management'].includes(moduleName);
+
+            if (!votingId && requiresVoting) {
                 alert("Please select a voting first");
                 return;
             }
 
-            fetch(`modules/${moduleName}.php?id=${votingId}&_=${Date.now()}`)
+            const url = requiresVoting
+                ? `modules/${moduleName}.php?id=${votingId}&_=${Date.now()}`
+                : `modules/${moduleName}.php?_=${Date.now()}`;
+
+            fetch(url)
                 .then(res => {
                     if (res.redirected) {
                         window.location.href = res.url;
@@ -159,7 +191,9 @@ $selectedVotingId = $_GET['id'] ?? '';
                 .then(html => {
                     if (!html) return;
 
-                    document.getElementById('module_container').innerHTML = html;
+                    const container = document.getElementById('module_container');
+                    container.innerHTML = html;
+                    container.dataset.module = moduleName;
 
                     if (moduleName === "add_users") {
                         resetEmailList();
@@ -187,6 +221,20 @@ $selectedVotingId = $_GET['id'] ?? '';
                 document.getElementById('module_container').innerHTML = response;
             });
         }
+
+        function returnHome() {
+            const container = document.getElementById('module_container');
+
+            // clear active module
+            delete container.dataset.module;
+
+            // reset UI
+            container.innerHTML = `
+                <h2>Welcome to the admin panel</h2>
+                <p>Select a voting on the left to begin.</p>
+            `;
+        }
+
 
         window.onload = updateButtons;
     </script>
@@ -229,9 +277,12 @@ $selectedVotingId = $_GET['id'] ?? '';
             <button class="feature-btn" data-module="admin_management" disabled onclick="loadModule('admin_management')">Manage admins</button>
         <?php endif; ?>
 
+        <!-- return to home -->
+        <button class="return_button" id="home_btn" onclick="returnHome()">Return to home page</button>
+
         <!-- logout button -->
         <form action="logout.php" method="get">
-            <button class="return" type="submit">Logout</button>
+            <button class="logout_button" type="submit">Logout</button>
         </form>
     </div>
 
