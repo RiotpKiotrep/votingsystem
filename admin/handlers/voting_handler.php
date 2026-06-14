@@ -10,31 +10,105 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $votings  = json_decode(file_get_contents('../../votings.json'), true);
 $action   = $_POST['action'] ?? null;
-$votingId = (int)($_POST['id'] ?? 0);
+$votingId = isset($_POST['id']) ? (int)$_POST['id'] : null;
 
-if (!$action || !$votingId) {
+if (!$action) {
     echo "Missing parameters.";
     exit;
 }
 
 // Find voting
-$found = false;
-foreach ($votings as &$voting) {
-    if ($voting['id'] === $votingId) {
-        $found = true;
-        break;
-    }
-}
+$voting = null;
 
-if (!$found) {
-    echo "Voting not found.";
-    exit;
+if ($action !== 'add') {
+    if (!$votingId) {
+        echo "Missing voting ID.";
+        exit;
+    }
+
+    foreach ($votings as &$v) {
+        if ($v['id'] === $votingId) {
+            $voting = &$v;
+            break;
+        }
+    }
+
+    if (!$voting) {
+        echo "Voting not found.";
+        exit;
+    }
 }
 
 // only save votings.json when needed
 $shouldSaveJson = false;
 
 switch ($action) {
+
+    case 'add':
+        if ($_SESSION['admin_role'] === 'AUDITOR') {
+            echo "You do not have permission to add votings.";
+            break;
+        }
+
+        $voting_name = $_POST['voting_name'] ?? '';
+        $title       = $_POST['title'] ?? '';
+        $description = $_POST['description'] ?? '';
+        $candidates  = $_POST['candidates'] ?? '';
+        $expiry_date = $_POST['expiry_date'] ?? '';
+
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $voting_name)) {
+            echo "Invalid voting name.";
+            break;
+        }
+
+        // forbidden table names
+        $forbidden = ['permitted_users', 'voting_tokens'];
+
+        if (in_array(strtolower($voting_name), $forbidden, true)) {
+            echo "This voting name is reserved and cannot be used.";
+            break;
+        }
+
+
+        foreach ($votings as $v) {
+            if ($v['voting_name'] === $voting_name) {
+                echo "Voting name already exists.";
+                break 2;
+            }
+        }
+
+        $pdo = getDB('voting_system_db');
+
+        $sql = "CREATE TABLE `$voting_name` (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            signature TEXT NOT NULL,
+            candidate VARCHAR(256) NOT NULL,
+            token VARCHAR(256) NOT NULL
+        )";
+
+        try {
+            $pdo->exec($sql);
+
+            $new_voting = [
+                'id' => count($votings) + 1,
+                'voting_name' => $voting_name,
+                'title' => $title,
+                'description' => $description,
+                'candidates' => array_map('trim', explode(',', $candidates)),
+                'expiry_date' => $expiry_date,
+                'voting_ended' => false
+            ];
+
+            $votings[] = $new_voting;
+            $shouldSaveJson = true;
+
+            logger("Voting $voting_name added");
+            echo "<h2>Voting added successfully.</h2>";
+
+        } catch (PDOException $e) {
+            echo "Error creating table: " . $e->getMessage();
+        }
+        break;
 
     case 'end':
         if ($voting['voting_ended']) {

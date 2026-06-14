@@ -24,5 +24,19 @@
         ],
         "expiry_date": "2026-06-30T10:20",
         "voting_ended": false
+    },
+    {
+        "id": 3,
+        "voting_name": "aaaaaaa",
+        "title": "AA",
+        "description": "Dcba",
+        "candidates": [
+            "A",
+            "B",
+            "C",
+            "D"
+        ],
+        "expiry_date": "45678-03-12T09:04",
+        "voting_ended": false
     }
 ]
